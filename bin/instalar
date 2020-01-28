@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# SIMP
+# Descricao: script que informa os dados basicos da instalacao do simp
+# Autor: Rubens Takiguti Ribeiro
+# Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+# E-mail: rubens@tecnolivre.com.br
+# Versao: 1.1.0.1
+# Data: 06/08/2008
+# Modificado: 10/11/2010
+# License: LICENSE.TXT
+# Copyright (C) 2008  Rubens Takiguti Ribeiro
+#
+if [ $SIMP_SCRIPT ]
+then
+    cmd="$SIMP_SCRIPT"
+else
+    cmd=$(type -P simp) || (echo "Comando simp nao encontrado" 1>&2 && exit 1)
+fi
+
+"$cmd" criarbase "$@" || exit 2
+
+"$cmd" instalarclasses || exit 3
+
+exit 0

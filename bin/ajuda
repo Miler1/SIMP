@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# SIMP
+# Descricao: script que invoca o manual de um sub-comando
+# Autor: Rubens Takiguti Ribeiro
+# Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+# E-mail: rubens@tecnolivre.com.br
+# Versao: 1.0.0.1
+# Data: 17/02/2011
+# Modificado: 14/05/2011
+# License: LICENSE.TXT
+# Copyright (C) 2011  Rubens Takiguti Ribeiro
+#
+
+# Obter argumentos e preencher o dirroot com o diretorio raiz do sistema
+if [ $SIMP_SCRIPT ]
+then
+    cmd="$SIMP_SCRIPT"
+else
+    cmd=$(type -P simp) || (echo "Comando simp nao encontrado" 1>&2 && exit 1)
+fi
+
+dirman=$("$cmd" config --dirman) || (echo "O diretorio ${dirman} nao existe" 1>&2 && exit 1)
+
+if (( $# < 1 ))
+then
+    echo "Informe o nome do comando desejado" 1>&2
+    exit 1
+fi
+
+man "${dirman}/pt_BR/man1/simp-${1}.1.gz"
+exit $?

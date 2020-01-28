@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# SIMP
+# Descricao: script que cria um arquivo de teste na raiz do sistema pronto para fazer um teste
+# Autor: Rubens Takiguti Ribeiro
+# Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+# E-mail: rubens@tecnolivre.com.br
+# Versao: 1.1.0.1
+# Data: 12/08/2008
+# Modificado: 10/11/2010
+# License: LICENSE.TXT
+# Copyright (C) 2008  Rubens Takiguti Ribeiro
+#
+if [ $SIMP_SCRIPT ]
+then
+    cmd="$SIMP_SCRIPT"
+else
+    cmd=$(type -P simp) || (echo "Comando simp nao encontrado" 1>&2 && exit 1)
+fi
+
+readonly ARQ_TESTE=`"$cmd" config --dirweb`"teste.php"
+
+if [ -f "${ARQ_TESTE}" ]
+then
+    echo "O arquivo ${ARQ_TESTE} ja existe" 1>&2
+    exit 1
+fi
+
+echo "Criando o arquivo ${ARQ_TESTE}"
+(
+cat <<EOF
+<?php
+// Este arquivo sera' apagado automaticamente com o fechamento deste editor
+require_once('config.php');
+
+EOF
+) > "$ARQ_TESTE" 2> /dev/null
+chmod 755 "$ARQ_TESTE"
+
+
+echo "Selecionando editor de codigo"
+if [ $VISUAL ]
+then
+    EDITOR_PHP=$VISUAL
+elif [ $EDITOR ]
+then
+    EDITOR_PHP=$EDITOR
+else
+    for i in "gedit" "nano" "pico" "vi"
+    do
+        caminho=$(type -P "$i") &> /dev/null
+        if [ -f "$caminho" ]
+        then
+            EDITOR_PHP="$caminho"
+            break
+        fi
+    done
+    if [ ! -f "$EDITOR_PHP" ]
+    then
+        echo "Defina o valor da variavel de ambiente EDITOR ou VISUAL" 1>&2
+        exit 1
+    fi
+fi
+
+echo "Abrindo o arquivo para edicao com ${EDITOR_PHP}"
+case "$EDITOR_PHP" in
+gedit | nano | pico)
+    "$EDITOR_PHP" +4 "$ARQ_TESTE" 2> /dev/null
+    ;;
+*)
+    "$EDITOR_PHP" "$ARQ_TESTE" 2> /dev/null
+    ;;
+esac
+
+echo "Removendo o arquivo ${ARQ_TESTE}"
+cmd_rm=$(type -P rm) || (echo "Erro ao obter comando rm" 1>&2 && exit 1)
+"$cmd_rm" "$ARQ_TESTE" &> /dev/null
+
+exit 0

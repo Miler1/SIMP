@@ -1,1 +1,0 @@
-0a:6:{s:3:"dir";s:86:"/var/www/html/simp/simp/arquivos//simp_cache4/33/e9c16c8f6a320524a488af4478e9b37a00799";s:7:"tamanho";i:8;s:6:"inicio";i:1515765203;s:6:"expira";i:1515765263;s:6:"versao";i:0;s:8:"compacto";b:0;}

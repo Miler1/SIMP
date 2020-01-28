@@ -1,0 +1,92 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Script que obtem o usuario, email e orgao
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.0.0.0
+// Data: 11/04/2011
+// Modificado: 11/04/2011
+// Copyright (C) 2011  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+
+/// Tipos de retorno
+define('SUCESSO',  0);
+define('ERRO_XML', 1);
+
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+$dirextras = `$simp config --dirextras`;
+$sistema = simplexml_load_file($dirextras.'sistema.xml');
+if (!$sistema) {
+    fwrite(STDERR, "Erro ao carregar dados do sistema\n");
+    fwrite(STDERR, "Ja configurou os dados com \"simp dados\" ?\n");
+    exit(ERRO_XML);
+}
+
+// Obter argumentos
+$tipos_opcoes = array(
+    array('t:', 'tipo:')
+);
+$padrao = array(
+    'tipo' => 'json',
+);
+$opcoes = util_cli::get_argumentos($tipos_opcoes, $padrao);
+
+
+// Obter dados do usuario
+$usuario = new stdClass();
+$usuario->login = $_SERVER['USERNAME'];
+$usuario->nome = '';
+$usuario->email = '';
+$usuario->id_orgao = '';
+$usuario->orgao = '';
+
+$login = $_SERVER['USERNAME'];
+foreach ($sistema->usuarios->usuario as $u) {
+    if ($login == strval($u->login)) {
+
+        $usuario->nome = strval($u->nome);
+        $usuario->email = strval($u->email);
+        $usuario->id_orgao = strval($u->orgao['ref']);
+
+        $achou = false;
+        foreach ($sistema->orgaos->orgao as $o) {
+            if ($usuario->id_orgao == strval($o['id'])) {
+                $usuario->orgao = strval($o);
+                $achou = true;
+                break;
+            }
+        }
+        if (!$achou) {
+            fwrite(STDERR, "Orgao invalido: {$usuario->id_orgao}\n");
+            exit(ERRO_XML);
+        }
+        break;
+    }
+}
+
+switch ($opcoes['tipo']) {
+case 'json':
+    echo json_encode($usuario);
+    break;
+case 'serialize':
+    echo serialize($usuario);
+    break;
+case 'ini':
+    foreach ($usuario as $k => $v) {
+        printf("%s='%s'\n", $k, addslashes($v));
+    }
+    break;
+case 'plain':
+    foreach ($usuario as $v) {
+        echo $v.PHP_EOL;
+    }
+    break;
+}
+exit(SUCESSO);
