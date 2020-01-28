@@ -1,0 +1,11 @@
+//
+//     Obtem um atributo da classe
+//
+public function __get($atributo) {
+// String $atributo: nome do atributo a ser obtido
+//
+    switch ($atributo) {
+    case '{{atributo}}':
+        {{codigo}}
+    }
+}

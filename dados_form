@@ -1,0 +1,3 @@
+/// Dados do Formulario
+$dados_form = new stdClass();
+$dados_form->{{atributo}} = {{valor}}

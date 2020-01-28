@@ -1,0 +1,86 @@
+__get	//\n//     Obtem um atributo da classe\n//\npublic function __get($atributo) {\n// String $atributo: nome do atributo a ser obtido\n//\n    switch ($atributo) {\n    case '|':\n        ?codigo?\n    }\n}
+__set	//\n//     Define o valor de um atributo da classe\n//\npublic function __set($atributo, $valor) {\n// String $atributo: nome do atributo a ser definido\n// Mixed $valor: valor do atributo\n//\n    switch ($atributo) {\n    case '|':\n        ?codigo?\n    }\n}
+__toString	//\n//     Define a forma como um objeto sera exibido\n//\npublic function __toString() {\n    |\n}
+ajuda	mensagem::comentario(|, ?$ajuda?);
+campo_aviso	$form->campo_aviso('|');
+campo_bool	$form->campo_bool(|, ?id?, ?label?, ?valor?);
+campo_busca	$form->campo_busca(|, ?id?, ?classe?, ?campo?, ?valor?, ?condicoes?, ?128?, ?30?, ?label?);
+campo_checkbox	$vt_| = ?codigo?;\n$form->campo_checkbox(?name?, ?id?, $vt_?nome?, ?valores?, ?label?);
+campo_data	$form->campo_data('|', ?dia?, ?mes?, ?ano?, ?label?, ?anos_passado?, ?anos_futuro?);
+campo_file	$form->campo_file(|, ?id?, ?label?);
+campo_formulario	//\n//     Indica como um campo deve ser apresentado no formulario\n//\npublic function campo_formulario(&$form, $campo, $valor) {\n// formulario $form: formulario que deve receber o campo\n// String $campo: nome do campo a ser inserido\n// Mixed $valor: valor padrao do campo\n//\n    if ($this->possui_atributo($campo)) {\n        $atributo = $this->get_definicao_atributo($campo);\n    }\n    switch ($campo) {\n    case '|':\n        $form->campo_?text?();\n        return true;\n    }\n    return parent::campo_formulario($form, $campo, $valor);\n}
+campo_hidden	$form->campo_hidden(|, ?valor?);
+campo_hierarquico	$form->campo_hierarquico(|, ?id?, ?link?, ?valor?, ?128?, ?30?, ?label?);
+campo_hora	$form->campo_hora('|', ?hora?, ?minuto?, ?segundo?, ?label?);
+campo_image	$form->campo_image(|, ?id?, ?src?, ?label?);
+campo_informacao	$form->campo_informacao('|');
+campo_password	$form->campo_password(|, ?id?, ?128?, ?30?, ?label?);
+campo_radio	$vt_| = ?codigo?;\n$form->campo_radio(?name?, ?id?, $vt_?nome?, ?valor?, ?label?);
+campo_relacionamento	$form->campo_relacionamento(|, ?id?, ?classe?, ?campo_preencher?, ?campo_exibir?, ?condicoes?, ?valor?, ?128?, ?30?, ?label?);
+campo_select	$vt_| = ?codigo?;\n$form->campo_select(?name?, ?id?, $vt_?nome?, ?valor?, ?label?);
+campo_submit	$form->campo_submit('|', '?enviar?', '?Enviar?');
+campo_telefone	$form->campo_telefone('|', ?ddd?, ?numero?, ?label?);
+campo_telefone_comercial	$form->campo_telefone_comercial('|', ?ddd?, ?numero?, ?ramal?, ?label?);
+campo_text	$form->campo_text(|, ?id?, ?valor?, ?128?, ?30?, ?label?);
+campo_textarea	$form->campo_textarea(|, ?id?, ?$valor?, 30, 5, ?label?);
+class	class | {\n    \n}//class
+comentario	<?php\n//\n// SIMP\n// Descricao: |\n// Autor: ?autor?\n// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres\n// E-mail: ?email?@tecnolivre.com.br\n// Versao: 1.0.0.0\n// Data: ?data?\n// Modificado: ?data?\n// Copyright (C) ?ano?  ?autor?\n// License: LICENSE.TXT\n//\n
+condicoes	$vt_condicoes = array();\n$vt_condicoes[] = condicao_sql::montar('|', '?=?', ?valor?);\n$vt_condicoes[] = condicao_sql::montar('?atributo?', '?=?', ?valor?);\n$vt_condicoes[] = condicao_sql::montar('?atributo?', '?=?', ?valor?);\n$vt_condicoes[] = condicao_sql::montar('?atributo?', '?=?', ?valor?);\n$vt_condicoes[] = condicao_sql::montar('?atributo?', '?=?', ?valor?);\n$condicoes = condicao_sql::sql_?and?($vt_condicoes);
+consultar_varios	$vt_condicoes = array();\n$vt_condicoes[] = condicao_sql::montar('|', '?=?', ?valor?);\n$vt_condicoes[] = condicao_sql::montar('?atributo2?', '?=?', ?valor2?);\n$vt_condicoes[] = condicao_sql::montar('?atributo3?', '?=?', ?valor3?);\n$condicoes = condicao_sql::sql_and($vt_condicoes);\n$campos = array(\n    '?campo?'\n);\n$ordem = array(\n    '?ordem?' => ?true?\n);\n$vt_?classe? = objeto::get_objeto('?classe?')->consultar_varios($condicoes, $campos, $ordem);
+converter_componente	// \n//     Converte as componentes de um atributo no respectivo valor do atributo final\n//\nprotected function converter_componente($campo, $valor, $valores) {\n// String $campo: nome do campo\n// Mixed $valor: valor do campo\n// Object $valores: valores a serem convertidos\n//\n    switch ($campo) {\n    case |:\n        ?codigo?\n    }\n    return parent::converter_componente($campo, $valor, $valores);\n}
+cv	$vt_condicoes = array();\n$vt_condicoes[] = condicao_sql::montar('|', '?=?', ?valor?);\n$vt_condicoes[] = condicao_sql::montar('?atributo2?', '?=?', ?valor2?);\n$vt_condicoes[] = condicao_sql::montar('?atributo3?', '?=?', ?valor3?);\n$condicoes = condicao_sql::sql_and($vt_condicoes);\n$campos = array(\n    '?campo?'\n);\n$ordem = array(\n    '?ordem?' => ?true?\n);\n$vt_?classe? = objeto::get_objeto('?classe?')->consultar_varios($condicoes, $campos, $ordem);
+dados_form	/// Dados do Formulario\n$dados_form = new stdClass();\n$dados_form->| = ?valor?
+dados_gerais	/// Dados Gerais\n$dados_gerais = new stdClass();\n$dados_gerais->| = ?valor?;
+dados_lista	/// Dados da Lista\n$dados_lista = new stdClass();\n$dados_lista->opcoes = array('exibir', 'alterar', 'excluir');\n$dados_lista->campos = array(|);
+dados_opcao	//\n//     Retorna um vetor com os dados da opcao (icone) que aparece na lista de entidades\n//\npublic function dados_opcao($opcao, $modulo) {\n// String $opcao: identificador da opcao\n// String $modulo: nome do modulo\n//\n    $dados = new stdClass();\n\n    switch ($opcao) {\n    case '|':\n        $dados->icone     = icone::endereco('?icone?');\n        $dados->arquivo   = '?arquivo?.php';\n        $dados->modulo    = $modulo;\n        $dados->descricao = '?descricao?';\n        $dados->id        = '';\n        $dados->class     = '';\n        return $dados;\n    }\n\n    return parent::dados_opcao($opcao, $modulo);\n}
+dados_pagina	/// Dados da Pagina\n$dados_pagina = new stdClass();\n$dados_pagina->titulo = '|';\n
+define	define('|', ?valor?);
+definir_atributos	//\n//     Cria os atributos da classe\n//\nprotected function definir_atributos() {\n\n    |\n}
+definir_entidade	//\n//     Cria a definicao de entidade\n//\nprotected function definir_entidade() {\n    $this->criar_entidade(\n        /* Nome Entidade   */ '|',\n        /* Entidade Plural */ '?plural?',\n        /* Genero          */ '?M?',\n        /* Classe          */ '?classe?',\n        /* Tabela          */ '?tabela?',\n        /* Desc. Tabela    */ 'Tabela de ?descricao?');\n}
+do	do {\n    |\n} while (?condicao?);
+dump	util::dump(|);
+else	else {\n    |\n}
+elseif	elseif (|) {\n    ?codigo?\n}
+exibir_atributo	//\n//     Define a forma como um atributo simples e' exibido\n//\npublic function exibir_atributo($nome_atributo) {\n// String $nome_atributo: nome do atributo a ser exibido\n//\n    switch ($nome_atributo) {\n    case '|':\n        $valor = ?codigo?\n        return $valor;\n    }\n    return parent::exibir_atributo($nome_atributo);\n}
+exibir_atributo_implicito	//\n//     Define a forma como um atributo implicito e' exibido\n//\npublic function exibir_atributo_implicito($nome_atributo) {\n// String $nome_atributo: nome do atributo implicito a ser exibido\n//\n    switch ($nome_atributo) {\n    case '|':\n        $valor = ?codigo?\n        return $valor;\n    }\n    return parent::exibir_atributo_implicito($nome_atributo);\n}
+filtro	//\n//     Imprime um formulario de filtro\n//\nfunction imprimir_formulario($dados) {\n// stdClass $dados: dados submetidos\n//\n    global $CFG;\n    $action = $CFG->site;\n    link::normalizar($action, true);\n\n    $padrao = array(\n        '|' => ?valor?\n    );\n    $dados = formulario::montar_dados($padrao, $dados);\n\n    $form = new formulario($action, '?id?');\n    $form->titulo_formulario('Formul&aacute;rio de Filtro');\n    $form->campo_?campo?(?parametros?);\n    $form->campo_submit('enviar', 'enviar', 'Buscar');\n    $form->imprimir();\n}\n\n\n//\n//     Monta as condicoes de filtragem\n//\nfunction montar_condicoes($dados, &$erros) {\n// stdClass $dados: dados submetidos\n// Array[String] $erros: erros ocorridos\n//\n    $vt_condicoes = array();\n\n    if ($dados->?campo?) {\n        $vt_condicoes[] = condicao_sql::montar('?atributo?', '?=?', ?valor?);\n    }\n\n    $condicoes = condicao_sql::sql_and($vt_condicoes);\n\n    return $condicoes;\n}\n
+for	for (|; ?condicao?; ?incremento?) {\n    ?codigo?\n}
+foreach	foreach (| as ?chave? => ?valor?) {\n    ?codigo?\n}
+formulario	$form = new formulario(|, '?id?');\n$form->campo_?tipo?(?parametros?);\n$form->imprimir();
+fpdf_table	$pdf = new fpdf_table('|', '?mm?', '?A4?');\n$pdf->SetMargins(?esquerda?, ?topo?, ?direita?);\n$pdf->SetFont('?Arial?', '?estilos?', ?12?);\n$pdf->AddPage();\n\n?codigo?\n\n$pdf->Output('?arquivo?', '?D?');\nexit(0);
+function	//\n//     |\n//\n?public static ?function ?funcao?(?parametros?) {\n    ?codigo?\n}
+get_campo_nome	//\n//     Retorna o NOME DO ATRIBUTO (simples, implicito ou relacionamento 1:1) usado para identificar o objeto\n//\npublic function get_campo_nome() {\n    return '|';\n}
+get_definicao_atributo_validacao	//\n//     Retorna a definicao de um atributo simples da classe para validacao\n//\npublic function get_definicao_atributo_validacao($nome_atributo) {\n// String $nome_atributo: nome do atributo desejado\n//\n    switch ($nome_atributo) {\n    case '|':\n        $atributo = new atributo('?$nome_atributo?', '?descricao?', ?padrao?);\n        ?codigo?\n        return $atributo;\n    }\n    return parent::get_definicao_atributo($nome_atributo);\n}\n
+get_info_campo	//\n//     Obtem informacoes sobre um campo do formulario\n//\npublic function get_info_campo($campo) {\n// String $campo: campo desejado\n//\n    switch ($campo) {\n    case '|':\n        $atributo = new atributo('?campo?', '?descricao?', ?padrao?);\n        ?definicao?\n        return $atributo;\n    }\n    return parent::get_info_campo($campo);\n}
+get_vetor	//\n//     Obtem a lista de |\n//\nfinal public function get_vetor_?atributo?() {\n    return array(\n        ?chave1? => '?valor1?',\n        ?chave2? => '?valor2?',\n        ?chave3? => '?valor3?'\n    );\n}
+http	http::cabecalho('|', '?arquivo?', '?inline?', ?tempo_expira?);
+if	if (|) {\n    ?codigo?\n}
+ife	if (|) {\n    ?codigo if?\n} else {\n    ?codigo_else?\n}
+imprimir_objeto_rel_uu	//\n//     Imprime o nome de um objeto filho (relacionamento 1:1)\n//\npublic function imprimir_objeto_rel_uu($nome_atributo, $return = false, $imprimir_descricao = true, $descricao_alternativa = false) {\n// String $nome_atributo: nome do atributo referente ao relacionamento (nome do objeto)\n// Bool $return: indica se o resultado sera' retornado ou impresso\n// Bool $imprimir_descricao: indica se deve ser incluida a descricao do relacionamento\n// String $descricao_alternativa: valor da descricao alternativa a ser utilizada\n//\n    switch ($nome_atributo) {\n    case '|':\n        $valor = '';\n        ?codigo?\n        if ($return) {\n            return $valor;\n        }\n        echo $valor;\n        return;\n    }\n    return parent::imprimir_objeto_rel_uu($nome_atributo, $return, $imprimir_descricao, $descricao_alternativa);\n}
+imprimir_vetor_rel_un	//\n//     Imprime um vetor da entidade (relacionamento 1:N)\n//     \npublic function imprimir_vetor_rel_un($nome_vetor, $return = false, $imprimir_descricao = true) {\n// String $nome_vetor: nome do vetor\n// Bool $return: retornar ou imprimir o vetor\n// Bool $imprimir_descricao: imprime a descricao para cada item do vetor\n//\n    switch ($nome_vetor) {\n    case '|':\n        $valor = '';\n        ?codigo?\n        if ($return) {\n            return $valor;\n        }\n        echo $valor;\n        return;\n    }\n    return parent::imprimir_vetor_rel_un($nome_vetor, $return, $imprimir_descricao);\n}
+interface	interface | {\n    ?metodos?\n}
+maviso	mensagem::aviso(|);
+merro	mensagem::erro(|);
+montar_dados	$padrao = array(\n    '|' => ?valor?\n);\n$dados = formulario::montar_dados($padrao, $dados);
+nav	$dados_pagina->nav[] = '|#?arquivo?';
+pode_acessar_formulario	//\n//     Indica se o formulario de um registro pode ser acessado ou nao por um usuario\n//\npublic function pode_acessar_formulario(&$usuario, &$motivo = '') {\n// usuario $usuario: usuario a ser testado\n// String $motivo: motivo pelo qual nao se pode acessar o registro\n//\n    $r = true;\n    switch ($this->id_form) {\n    case $this->id_formulario_|():\n        if (?condicoes?) {\n            $r = false;\n            $motivo = '?motivo?';\n        }\n        break;\n    }\n    return $r;\n}
+pode_exibir	//\n//     Indica se o registro pode ser exibido ou nao por um usuario\n//\npublic function pode_exibir(&$usuario, &$motivo = '') {\n// usuario $usuario: usuario a ser testado\n// String $motivo: motivo pelo qual nao se pode exibir registro\n//\n    $r = true;\n    if (|) {\n        $r = false;\n        $motivo = '?motivo?';\n    }\n    return $r;\n}
+pode_ser_manipulado	//\n//     Indica se o registro pode ser manipulado pelo usuario\n//\npublic function pode_ser_manipulado(&$usuario) {\n// usuario $usuario: usuario a ser testado\n//\n    $r = false;\n    if (|) {\n        $r = true;\n    }\n    return $r;\n}
+pos_salvar	//\n//     Operacoes realizadas apos salvar os dados no BD\n//\npublic function pos_salvar() {\n    $r = true;\n    switch ($this->id_form) {\n    case $this->id_formulario_|():\n        ?codigo?\n        break;\n    }\n    return $r;\n}
+pre_salvar	//\n//     Operacoes realizadas antes de salvar os dados no BD\n//\npublic function pre_salvar(&$salvar_campos) {\n// Array[String] $salvar_campos: vetor de campos a serem salvos\n//\n    $r = true;\n    switch ($this->id_form) {\n    case $this->id_formulario_|():\n        ?codigo?\n        break;\n    }\n    return $r;\n}
+procedure	//\n//     |\n//\n?public static ?function ?funcao?(?parametros?) {\n    ?codigo?\n}
+sqland	condicao_sql::sql_and(|)
+sqlbetween	condicao_sql::between('|', ?inicio?, ?fim?)
+sqldata	condicao_sql::data('|', '?dd-mm-aaaa-hh-mm-ss?')
+sqlexcept	condicao_sql::except('|', array(?valores?))
+sqlin	condicao_sql::sql_in('|', array(?valores?))
+sqlmontar	condicao_sql::montar('|', '?=?', ?valor?)
+sqlnot	condicao_sql::sql_not(|);
+sqlor	condicao_sql::sql_or(|)
+sqlvazia	condicao_sql::vazia()
+sqlvetor	condicao_sql::montar_vetor(|)
+switch	switch (|) {\ncase ?valor?:\n    ?codigo?\n    break;\ndefault:\n    ?codigo2?\n    break;\n}
+try	try {\n    |\n} catch (?Exception? $e) {\n    ?codigo2?\n}
+validacao_final	//\n//     Realiza a validacao final dos dados antes de salva-los (util para validar atributos dependentes)\n//\npublic function validacao_final(&$dados) {\n// Object $dados: dados a serem validados\n//\n    $r = true;\n    switch ($this->id_form) {\n    case $this->id_formulario_|():\n        ?codigo?\n        break;\n    }\n    return $r;\n}
+vetor_associativo	$vt_condicoes = array();\n$vt_condicoes[] = condicao_sql::montar('|', '?=?', ?valor1?);\n$vt_condicoes[] = condicao_sql::montar('?atributo2?', '?=?', ?valor2?);\n$vt_condicoes[] = condicao_sql::montar('?atributo3?', '?=?', ?valor3?);\n$condicoes = condicao_sql::sql_and($vt_condicoes);\n$ordem = array(\n    '?ordem?' => ?true?\n);\n$vt_?classe? = objeto::get_objeto('?classe?')->vetor_associativo(?chave?, ?valor?, $condicoes, $ordem);
+while	while (|) {\n    ?codigo?\n}

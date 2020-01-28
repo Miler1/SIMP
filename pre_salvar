@@ -1,0 +1,14 @@
+//
+//     Operacoes realizadas antes de salvar os dados no BD
+//
+public function pre_salvar(&$salvar_campos) {
+// Array[String] $salvar_campos: vetor de campos a serem salvos
+//
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_{{inserir}}():
+        {{codigo}}
+        break;
+    }
+    return $r;
+}

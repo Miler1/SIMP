@@ -1,0 +1,1392 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Conversor de classes java (geradas com o JUDE) para entidades do SIMP
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.ufla.br
+// Versao: 1.0.0.0
+// Data: 23/01/2009
+// Modificado: 11/04/2011
+// Copyright (C) 2009  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+define('DEBUG_CONVERSOR', 0); // 0 = desativado / 1 = var_dump nas classes lidas / 2 = exibe as entidades e extensoes
+
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+exec("$simp usuario -t json", $linhas, $retorno);
+if ($retorno != 0) {
+    fwrite(STDERR, 'Erro ao obter usuario do arquivo sistema.xml'.PHP_EOL);
+    exit(1);
+}
+
+$autor = json_decode($linhas[0]);
+
+// Obter diretorio de origem e destino
+if (count($argv) < 3) {
+    fwrite(STDERR, "Informar o diretorio de origem e destino\n");
+    exit(1);
+}
+if (!is_dir($argv[1])) {
+    fwrite(STDERR, "Diretorio de origem invalido: {$argv[1]}\n");
+    exit(2);
+}
+if (!is_dir($argv[2])) {
+    fwrite(STDERR, "Diretorio de destino invalido: {$argv[2]}\n");
+    exit(3);
+}
+
+$origem  = realpath($argv[1]);
+$destino = realpath($argv[2]);
+
+// Criar diretorio de entidade e extensao
+if (!is_dir($destino.'/entidade')) {
+    mkdir($destino.'/entidade');
+}
+if (!is_dir($destino.'/extensao')) {
+    mkdir($destino.'/extensao');
+}
+
+// Percorrer os arquivos java e obter dados das classes
+$classes = array();
+foreach (glob($origem.'/*.java') as $arq) {
+    $info      = pathinfo($arq);
+    $classe    = $info['filename'];
+    $conteudo  = file_get_contents($arq);
+    $definicao = parse_java($conteudo);
+    $classes[$definicao->classe] = $definicao;
+}
+
+if (DEBUG_CONVERSOR & 1) {
+    var_dump($classes);
+    exit(0);
+}
+
+// Percorrer classes e gerar as entidades do Simp
+foreach ($classes as $classe => $definicao) {
+    $arq1 = $destino.'/entidade/'.$classe.'.class.php';
+    $arq2 = $destino.'/extensao/'.$classe.'.class.php';
+    $salvar = 's';
+    if (file_exists($arq1) || file_exists($arq2)) {
+        echo "Ja existe a classe {$classe}\n".
+             'Deseja sobrescreve-la? [s/n] ';
+        do {
+            $salvar = trim(fgets(STDIN));
+            if ($salvar != 's' && $salvar != 'n') {
+                echo "Valor invalido! Digite 's' ou 'n': ";
+            }
+        } while ($salvar != 's' && $salvar != 'n');
+    }
+    if ($salvar == 's') {
+        salvar_entidade($arq1, $autor, $definicao, $classes);
+        salvar_extensao($arq2, $autor, $definicao, $classes);
+        echo "Entidade {$classe} salva com sucesso\n";
+    } else {
+        echo "Entidade {$classe} foi ignorada\n";
+    }
+}
+exit(0);
+
+
+/// Funcoes
+
+
+//
+//     Funcao para obter dados de uma classe java gerada pelo jude
+//
+function parse_java($conteudo) {
+// String $conteudo: conteudo do arquivo java
+//
+    $definicao = new stdClass();
+    // ->comentario string (opcional)
+    // ->singular   string
+    // ->plural     string
+    // ->genero     char
+    // ->classe     string
+    // ->atributos  array(stdClass)
+    // ->metodos    array(stdClass)
+
+    $definicao->classe    = '';
+    $definicao->singular  = '';
+    $definicao->plural    = '';
+    $definicao->genero    = 'I';
+    $definicao->atributos = array();
+    $definicao->metodos   = array();
+
+    $tr = array('public '    => '',
+                'protected ' => '',
+                'private '   => '',
+                "\t"         => '',
+                "\r"         => '',
+                ';'          => '',
+                '  '         => ' ');
+    $conteudo = trim(strtr($conteudo, $tr));
+    $linhas = explode("\n", $conteudo);
+    unset($conteudo, $tr);
+
+    // Montar entidade
+    $flag_metodo              = false;
+    $flag_comentario          = false;
+    $flag_atributos_especiais = false;
+    $buffer_comentario = array();
+    $i = 0;
+    foreach ($linhas as $l) {
+        $trim = trim($l);
+        if (!$trim) { continue; } 
+
+        // Cabecalho do arquivo java
+        if (!$definicao->classe && preg_match('/^class[\040]+([A-Za-z0-9_]+)[\040]+\{$/', $trim, $match)) {
+            if (($pos = strpos($match[1], ' ')) !== false) {
+                $definicao->classe = substr($match[1], 0, $pos);
+            } else {
+                $definicao->classe = $match[1];
+            }
+            $definicao->genero   = get_genero($definicao->classe);
+            $definicao->singular = get_singular($definicao->classe);
+            $definicao->plural   = get_plural($definicao->classe);
+            $definicao->tabela   = get_tabela($definicao->classe);
+            if (count($buffer_comentario)) {
+                $definicao->comentario = $buffer_comentario;
+                $buffer_comentario = array();
+            }
+            continue;
+        }
+
+        // Se achou um comentario
+        if (strpos($trim, '/**') === 0) {
+            $flag_comentario = true;
+            $buffer_comentario = array();
+            continue;
+        } elseif ($flag_comentario) {
+            if (strpos($trim, '*/') === 0) {
+                $flag_comentario = false;
+            } else {
+                $c = substr($trim, 1);
+                if (strpos($c, ' - ') !== false) {
+                    @list($chave, $valor) = explode(' - ', $c);
+                    $buffer_comentario[$chave] = $valor;
+                } else {
+                    $buffer_comentario[count($buffer_comentario) + 1] = $c;
+                }
+            }
+            continue;
+        }
+
+        // Se achou um metodo
+        if (strpos($trim, '{') !== false) {
+            preg_match('/^.*[\040]+(.+)\((.*)\)[\040]+\{$/', $trim, $match);
+
+            $metodo = new stdClass();
+            // ->nome       string
+            // ->parametros array(string)
+            // ->descricao  array(string) (opcional)
+            $metodo->nome      = trim($match[1]);
+            if (trim($match[2])) {
+                $metodo->parametros = array_map('trim', explode(',', trim($match[2])));
+            } else {
+                $metodo->parametros = array();
+            }
+            if (count($buffer_comentario)) {
+                $metodo->descricao = $buffer_comentario;
+                $buffer_comentario = array();
+            }
+
+            $definicao->metodos[] = $metodo;
+            $flag_metodo = true;
+            continue;
+        } elseif ($flag_metodo) {
+            if (strpos($trim, '}') === 0) {
+                $flag_metodo = false;
+            }
+            continue;
+        }
+
+        // Obter dados do atributo
+        $atributo = new stdClass();
+        // ->tipo      string
+        // ->nome      string
+        // ->num       int
+        // ->enum      array(string) (opcional)
+        // ->implicito bool          (opcional)
+        // ->vetor     bool          (opcional)
+        // ->objeto    bool          (opcional)
+
+        @list($atributo->tipo, $atributo->nome) = explode(' ', $trim);
+        if (!$atributo->tipo || !$atributo->nome) { continue; }
+        $atributo->tipo = strtolower($atributo->tipo);
+        $atributo->nome = strtolower($atributo->nome);
+        $atributo->num  = $i++;
+
+        $count_comentario = count($buffer_comentario);
+        if ($count_comentario) {
+            if ($count_comentario > 1) {
+                if (!$flag_atributos_especiais) {
+                    $atributo->enum = $buffer_comentario;
+                    $buffer_comentario = array();
+                }
+            } else {
+                $atributo->comentario = $buffer_comentario;
+                $buffer_comentario = array();
+            }
+        }
+
+        switch ($atributo->tipo) {
+        case 'int':
+        case 'integer':
+        case 'long':
+        case 'float':
+        case 'double':
+        case 'char':
+        case 'string':
+        case 'binario':
+        case 'bool':
+        case 'boolean':
+        case 'data':
+            if ($flag_atributos_especiais) {
+                $atributo->implicito = true;
+            }
+            break;
+        default:
+            $flag_atributos_especiais = true;
+            break;
+        }
+
+        $definicao->atributos[] = $atributo;
+    }
+
+    // Copiar os atributos e filtrar os repetidos (gerados pelo jude)
+    $atributos_aux = $definicao->atributos;
+
+    // Filtrar os atributos 1:N
+    foreach ($definicao->atributos as $chave => &$atributo) {
+        if (strpos($atributo->tipo, '[') !== false) {
+            $atributo->tipo = substr($atributo->tipo, 0, -2);
+            foreach ($atributos_aux as $chave2 => $atributo2) {
+                if ($atributo->num == $atributo2->num) { continue; }
+                if ($atributo->tipo == $atributo2->tipo) {
+                    $definicao->atributos[$chave2]->vetor = true;
+                    unset($definicao->atributos[$chave], $atributos_aux[$chave]);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Filtrar os atributos 1:1
+    $tipos_simples = array('int', 'integer', 'long', 'float', 'double', 'string', 'char', 'bool', 'boolean', 'byte', 'data');
+    foreach ($definicao->atributos as $chave => $atributo) {
+        if (!isset($definicao->atributos[$chave]) || in_array($atributo->tipo, $tipos_simples)) { 
+            continue;
+        }
+        $definicao->atributos[$chave]->objeto = true;
+        foreach ($atributos_aux as $chave2 => $atributo2) {
+            if (is_null($atributo2) || $atributo->num == $atributo2->num) { continue; }
+            if ($atributo->tipo == $atributo2->tipo && $atributo2->nome == $atributo2->tipo) {
+                unset($definicao->atributos[$chave2], $atributos_aux[$chave], $atributos_aux[$chave2]);
+                break;
+            }
+        }
+    }
+
+    // Agrupar por categoria
+    $atributos_simples    = array();
+    $atributos_uu         = array();
+    $atributos_un         = array();
+    $atributos_implicitos = array();
+
+    foreach ($definicao->atributos as $atributo) {
+        if (isset($atributo->objeto)) {
+            $atributos_uu[$atributo->nome] = $atributo;
+        } elseif (isset($atributo->vetor)) {
+            $atributos_un[$atributo->nome] = $atributo;
+        } elseif (isset($atributo->implicito)) {
+            $atributos_implicitos[$atributo->nome] = $atributo;
+        } else {
+            $atributos_simples[$atributo->nome] = $atributo;
+        }
+    }
+
+    // Reenumerar
+    $i = 0;
+    $definicao->atributos = array();
+    foreach ($atributos_simples as $atributo) {
+        $atributo->num = $i++;
+        $definicao->atributos[] = $atributo;
+    }
+    foreach ($atributos_uu as $atributo) {
+        $atributo->num = $i++;
+        $definicao->atributos[] = $atributo;
+    }
+    foreach ($atributos_un as $atributo) {
+        $atributo->num = $i++;
+        $definicao->atributos[] = $atributo;
+    }
+    foreach ($atributos_implicitos as $atributo) {
+        $atributo->num = $i++;
+        $definicao->atributos[] = $atributo;
+    }
+    return $definicao;
+}
+
+
+//
+//     Tenta adivinhar o genero de uma classe
+//
+function get_genero($classe) {
+// String $classe: nome da classe
+//
+    switch (substr($classe, -1)) {
+    case 'o':
+        if (substr($classe, -2) == 'ao') {
+            return 'F';
+        }
+    case 'u':
+        return 'M';
+    case 'a':
+        return 'F';
+    }
+
+    if (preg_match('/or$/', $classe)) {
+        return 'M';
+    } elseif (preg_match('/nte$/', $classe)) {
+        return 'F';
+    } elseif (preg_match('/dade$/', $classe)) {
+        return 'F';
+    }
+    return 'I';
+}
+
+
+//
+//     Obtem o nome da constante a partir de sua descricao
+//
+function get_constante($descricao, $definicao) {
+// String $descricao: descricao da constante
+// Object $definicao: dados da classe
+//
+    $tr = array(' ' => '_', '-' => '_', '+' => '');
+    if (($pos = strpos($descricao, '(')) !== false) {
+        $descricao = trim(substr($descricao, 0, $pos));
+    }
+    $const = texto::strtoupper($definicao->classe).
+             '_'.
+             strtr(texto::strtoupper(texto::strip_acentos($descricao)), $tr);
+
+    $len = strlen($const);
+    $retorno = '';
+    for ($i = 0; $i < $len; $i++) {
+        $char = $const[$i];
+        if ($char == '_') {
+            $retorno .= '_';
+        } elseif (ctype_alnum($char)) {
+            $retorno .= $char;
+        }
+    }
+    return $retorno;
+}
+
+
+//
+//     Tenta adivinar o nome no singular
+//
+function get_singular($str) {
+// String $str: nome de alguma coisa
+//
+    $nomes = explode('_', $str);
+    $retorno = array();
+    foreach ($nomes as $nome) {
+        if (preg_match('/^([a-z]*)cao$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&ccedil;&atilde;o');
+        } elseif (preg_match('/^([a-z]*)ao$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&atilde;o');
+        } elseif (preg_match('/^([a-z]*)co$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&ccedil;o');
+        } elseif (preg_match('/^([a-z]*)coes$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&ccedil;&atilde;o');
+        } elseif (preg_match('/^([a-z]*)oes$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&atilde;o');
+        } elseif (preg_match('/^([a-z]*)ns$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'m');
+        } elseif (preg_match('/^([a-z]*)res$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'r');
+        } elseif (preg_match('/^([a-z]*)as$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'a');
+        } elseif (preg_match('/^([a-z]*)is$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'l');
+        } elseif (preg_match('/^([a-z]*)([b|c|d|f|g|j|m|n|p|t|v|x])es$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].$match[2].'e');
+        } elseif (preg_match('/^([a-z]*)es$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1]);
+        } elseif (preg_match('/^([a-z]*)s$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1]);
+        } else {
+            $retorno[] = ucfirst($nome);
+        }
+    }
+    return implode(' ', $retorno);
+}
+
+
+//
+//     Tenta adivinar o nome no plural
+//
+function get_plural($str) {
+// String $str: nome de alguma coisa
+//
+    $nomes = explode('_', $str);
+    $retorno = array();
+    foreach ($nomes as $nome) {
+
+        // Excessoes
+        switch (texto::strtolower($nome)) {
+        case 'nao':
+            $retorno[] = 'n&atilde;o';
+            continue;
+        case 'a':
+        case 'com':
+        case 'de':
+        case 'em':
+        case 'entre':
+        case 'sem':
+        case 'sob':
+        case 'sobre':
+        case 'para':
+        case 'por':
+            $retorno[] = $nome;
+            continue;
+        }
+
+        // Converter para plural
+        if (preg_match('/^([a-z]*)cao$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&ccedil;&otilde;es');
+        } elseif (preg_match('/^([a-z]*)ao$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&otilde;es');
+        } elseif (preg_match('/^([a-z]*)co$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&ccedil;os');
+        } elseif (preg_match('/^([a-z]*)coes$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&ccedil;&otilde;es');
+        } elseif (preg_match('/^([a-z]*)oes$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'&otilde;es');
+        } elseif (preg_match('/^([a-z]*)l$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'is');
+        } elseif (preg_match('/^([a-z]*)m$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'ns');
+        } elseif (preg_match('/^([a-z]*)r$/', $nome, $match)) {
+            $retorno[] = ucfirst($match[1].'es');
+        } elseif (preg_match('/^([a-z]*)s$/', $nome, $match)) {
+            $retorno[] = ucfirst($nome);
+        } else {
+            $retorno[] = ucfirst($nome).'s';
+        }
+    }
+    return implode(' ', $retorno);
+}
+
+
+//
+//     Tenta adivinar o nome informado com acentos
+//
+function get_nome($str) {
+// String $str: nome de alguma coisa
+//
+    $retorno = array();
+
+    $nomes = explode('_', $str);
+    $count = count($nomes);
+    foreach ($nomes as $i => $nome) {
+
+        // Colocar acento em atributos "comuns"
+        switch ($nome) {
+        case 'ano':
+            $retorno[] = 'Ano';
+            if ($i < $count - 1) {
+                $retorno[] = 'de';
+            }
+            break;
+        case 'area':
+            $retorno[] = '&Aacute;rea';
+            break;
+        case 'codigo':
+            $retorno[] = 'C&oacute;digo';
+            if ($i < $count - 1) {
+                switch (get_genero($nomes[$i + 1])) {
+                case 'M':
+                    $retorno[] = 'do';
+                    break;
+                case 'F':
+                    $retorno[] = 'da';
+                    break;
+                case 'I':
+                    $retorno[] = 'de';
+                    break;
+                }
+            }
+            break;
+        case 'data':
+            $retorno[] = 'Data';
+            if ($i < $count - 1) {
+                $retorno[] = 'de';
+            }
+            break;
+        case 'editavel':
+            $retorno[] = 'Edit&aacute;vel';
+            break;
+        case 'eh':
+            $retorno[] = '&Eacute;';
+            break;
+        case 'email':
+            $retorno[] = 'E-mail';
+            break;
+        case 'forma':
+            $retorno[] = 'Forma';
+            if ($i < $count - 1) {
+                switch (get_genero($nomes[$i + 1])) {
+                case 'M':
+                    $retorno[] = 'do';
+                    break;
+                case 'F':
+                    $retorno[] = 'da';
+                    break;
+                case 'I':
+                    $retorno[] = 'de';
+                    break;
+                }
+            }
+            break;
+        case 'hora':
+            $retorno[] = 'Hora';
+            if ($i < $count - 1) {
+                $retorno[] = 'de';
+            }
+            break;
+        case 'inicio':
+            $retorno[] = 'In&iacute;cio';
+            break;
+        case 'local':
+            $retorno[] = 'Local';
+            if ($i < $count - 1) {
+                $retorno[] = 'de';
+            }
+            break;
+
+        case 'mae':
+            $retorno[] = 'M&atilde;e';
+            break;
+        case 'matricula':
+            $retorno[] = 'Matr&iacute;cula';
+            break;
+        case 'maxima':
+            $retorno[] = 'M&aacute;xima';
+            break;
+        case 'maximo':
+            $retorno[] = 'M&aacute;ximo';
+            break;
+        case 'mes':
+            $retnorno[] = 'M&ecirc;s';
+            if ($i < $count - 1) {
+                $retorno[] = 'de';
+            }
+            break;
+        case 'minima':
+            $retorno[] = 'M&iacute;nima';
+            break;
+        case 'minimo':
+            $retorno[] = 'M&iacute;nimo';
+            break;
+        case 'municipio':
+            $retorno[] = 'Munic&iacute;pio';
+            if ($i < $count - 1) {
+                $retorno[] = 'de';
+            }
+            break;
+        case 'nao':
+            $retorno[] = 'n&atilde;o';
+            break;
+        case 'numero':
+            $retorno[] = 'N&uacute;mero';
+            if ($i < $count - 1) {
+                switch (get_genero($nomes[$i + 1])) {
+                case 'M':
+                    $retorno[] = 'do';
+                    break;
+                case 'F':
+                    $retorno[] = 'da';
+                    break;
+                case 'I':
+                    $retorno[] = 'de';
+                    break;
+                }
+            }
+            break;
+        case 'periodo':
+            $retorno[] = 'Per&iacute;odo';
+            if ($i < $count - 1) {
+                switch (get_genero($nomes[$i + 1])) {
+                case 'M':
+                    $retorno[] = 'do';
+                    break;
+                case 'F':
+                    $retorno[] = 'da';
+                    break;
+                case 'I':
+                    $retorno[] = 'de';
+                    break;
+                }
+            }
+            break;
+        case 'pre':
+            $retorno[] = 'Pr&eacute;';
+            break;
+        case 'provisoria':
+            $retorno[] = 'Provis&oacute;ria';
+            break;
+        case 'provisorio':
+            $retorno[] = 'Provis&oacute;rio';
+            break;
+        case 'proxima':
+            $retorno[] = 'Pr&oacute;xima';
+            break;
+        case 'proximo':
+            $retorno[] = 'Pr&oacute;ximo';
+            break;
+        case 'quantidade':
+            $retorno[] = 'Quantidade';
+            if ($i < $count - 1 && $nomes[$i + 1] != 'total') {
+                $retorno[] = 'de';
+            }
+            break;
+        case 'relatorio':
+            $retorno[] = 'Relat&oacute;rio';
+            break;
+        case 'termino':
+            $retorno[] = 'T&eacute;rmino';
+            break;
+        case 'titulo':
+            $retorno[] = 'T&iacute;tulo';
+            if ($i < $count - 1) {
+                switch (get_genero($nomes[$i + 1])) {
+                case 'M':
+                    $retorno[] = 'do';
+                    break;
+                case 'F':
+                    $retorno[] = 'da';
+                    break;
+                case 'I':
+                    $retorno[] = 'de';
+                    break;
+                }
+            }
+            break;
+        case 'ultima':
+            $retorno[] = '&Uacute;ltima';
+            break;
+        case 'ultimo':
+            $retorno[] = '&Uacute;ltimo';
+            break;
+        case 'visivel':
+            $retorno[] = 'Vis&iacute;vel';
+            break;
+        default:
+            if (preg_match('/^([a-z]*)cao$/', $nome, $match)) {
+                $retorno[] = ucfirst($match[1].'&ccedil;&atilde;o');
+            } elseif (preg_match('/^([a-z]*)ao$/', $nome, $match)) {
+                $retorno[] = ucfirst($match[1].'&atilde;o');
+            } elseif (preg_match('/^([a-z]*)co$/', $nome, $match)) {
+                $retorno[] = ucfirst($match[1].'&ccedil;o');
+            } elseif (preg_match('/^([a-z]*)coes$/', $nome, $match)) {
+                $retorno[] = ucfirst($match[1].'&ccedil;&otilde;es');
+            } elseif (preg_match('/^([a-z]*)oes$/', $nome, $match)) {
+                $retorno[] = ucfirst($match[1].'&otilde;es');
+            } else {
+                $retorno[] = ucfirst($nome);
+            }
+            break;
+        }
+    }
+
+    return implode(' ', $retorno);
+}
+
+
+//
+//     Obtem uma sugestao de nome de tabela para a classe
+//
+function get_tabela($classe) {
+// String $classe: nome da classe
+//
+    $nomes = explode('_', $classe);
+    $retorno = array();
+    foreach ($nomes as $nome) {
+        if (preg_match('/^([a-z]*)cao$/', $nome, $match)) {
+            $retorno[] = $match[1].'coes';
+        } elseif (preg_match('/^([a-z]*)ao$/', $nome, $match)) {
+            $retorno[] = $match[1].'oes';
+        } elseif (preg_match('/^([a-z]*)l$/', $nome, $match)) {
+            $retorno[] = $match[1].'is';
+        } elseif (preg_match('/^([a-z]*)m$/', $nome, $match)) {
+            $retorno[] = $match[1].'ns';
+        } elseif (preg_match('/^([a-z]*)r$/', $nome, $match)) {
+            $retorno[] = $match[1].'es';
+        } elseif (preg_match('/^([a-z]*)s$/', $nome, $match)) {
+            $retorno[] = $nome;
+        } else {
+            $retorno[] = $nome.'s';
+        }
+    }
+    return implode('_', $retorno);
+}
+
+
+//
+//     Monta a entidade e a salva
+//
+function salvar_entidade($arquivo, $autor, $definicao, $classes) {
+// String $arquivo: nome do arquivo onde pretende-se salvar a entidade
+// Object $autor: objeto com os dados do autor da entidade
+// Object $definicao: objeto com os dados da entidade
+// Array[String => Object] $classes: vetor com todas as definicoes de classes
+//
+    $entidade = cabecalho_entidade($definicao, $autor);
+    foreach ($definicao->atributos as $atributo) {
+        $entidade .= atributo_entidade($atributo, $definicao, $classes);
+    }
+    $entidade .= rodape_entidade($definicao, $classes);
+
+    if (DEBUG_CONVERSOR & 2) {
+        echo $entidade."\n";
+        return;
+    }
+    file_put_contents($arquivo, $entidade);
+}
+
+
+//
+//     Gera o cabecalho de uma classe entidade
+//
+function cabecalho_entidade($definicao, $autor) {
+// Object $definicao: dados da classe
+// Object $autor: autor do arquivo
+//
+$data = strftime('%d/%m/%Y');
+$ano = strftime('%Y');
+$comentario = isset($definicao->comentario) ? implode(' / ', $definicao->comentario) : 'Classe '.$definicao->classe;
+$entidade = <<<PHP
+<?php
+//
+// SIMP
+// Descricao: {$comentario}
+// Autor: {$autor->nome}
+// Orgao: {$autor->orgao}
+// E-mail: {$autor->email}
+// Versao: 1.0.0.0
+// Data: {$data}
+// Modificado: {$data}
+// Copyright (C) {$ano}  {$autor->nome}
+// License: LICENSE.TXT
+//
+
+PHP;
+
+$primeiro = false;
+foreach ($definicao->atributos as $atributo) {
+    if (isset($atributo->enum)) {
+        if (!$primeiro) {
+            $entidade .= "\n";
+            $primeiro = true;
+        }
+        $constantes = array();
+        $maior = 0;
+        foreach ($atributo->enum as $cod => $valor) {
+            $const = "'".get_constante($valor, $definicao)."'";
+            if (!is_numeric($cod)) {
+                $cod = "'".$cod."'";
+            }
+            $constantes[$const]  = $cod;
+            $maior = max($maior, strlen($const));
+        }
+
+        $entidade .= "// Enum {$atributo->nome}\n";
+        foreach ($constantes as $const => $cod) {
+            $entidade .= sprintf("define(%s, %s);\n", $const, str_repeat(' ', $maior - strlen($const)).$cod);
+        }
+        $entidade .= "\n";
+    }
+}
+
+$desc_tabela = texto::strip_acentos(texto::decodificar($definicao->plural));
+$entidade .= <<<PHP
+abstract class {$definicao->classe}_base extends objeto_formulario {
+
+    //
+    //     Cria a definicao da entidade
+    //
+    protected function definir_entidade() {
+        \$this->criar_entidade(
+            /* Nome Entidade   */ '{$definicao->singular}',
+            /* Entidade Plural */ '{$definicao->plural}',
+            /* Genero          */ '{$definicao->genero}',
+            /* Classe          */ '{$definicao->classe}',
+            /* Tabela          */ '{$definicao->tabela}',
+            /* Desc. Tabela    */ 'Tabela de {$desc_tabela}');
+    }
+
+
+    //
+    //     Cria os atributos da classe
+    //
+    protected function definir_atributos() {
+
+
+PHP;
+return $entidade;
+}
+
+
+//
+//     Monta o rodape do arquivo de uma entidade
+//
+function rodape_entidade($definicao, $classes) {
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+
+// Checar se precisa de um campo para nome
+$possiveis_atributos = array('nome', 'titulo', 'descricao', 'nome_breve',
+                             'sigla', 'detalhes', 'razao_social');
+$possui_nome = false;
+
+$entidade = <<<PHP
+    }
+
+PHP;
+
+$primeiro = false;
+foreach ($definicao->atributos as $atributo) {
+    if (in_array($atributo->nome, $possiveis_atributos)) {
+        $possui_nome = true;
+    }
+    if (isset($atributo->implicito)) {
+$entidade .= <<<PHP
+
+    //
+    //     Obtem o valor do atributo implicito {$atributo->nome}
+    //
+    final public function get_{$atributo->nome}() {
+        //TODO
+    }
+
+
+PHP;
+    }
+}
+
+if (!$possui_nome) {
+$campo_nome = get_campo_nome($definicao->classe, $classes);
+$entidade .= <<<PHP
+
+    //
+    //     Retorna o nome do atributo usado para identificar o objeto
+    //
+    final public function get_campo_nome() {
+        return '{$campo_nome}';
+    }
+
+
+PHP;
+}
+
+$entidade .= <<<PHP
+}//class
+PHP;
+    return $entidade;
+}
+
+
+//
+//     Monta um atributo da entidade
+//
+function atributo_entidade($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+    if (isset($atributo->objeto)) {
+        return atributo_uu($atributo, $definicao, $classes);
+    } elseif (isset($atributo->vetor)) {
+        return atributo_un($atributo, $definicao, $classes);
+    } elseif (isset($atributo->implicito)) {
+        return atributo_implicito($atributo, $definicao, $classes);
+    }
+    return atributo_simples($atributo, $definicao, $classes);
+}
+
+
+//
+//     Monta um atributo simples da entidade
+//
+function atributo_simples($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+    switch ($atributo->tipo) {
+    case 'data':
+        return atributo_data($atributo, $definicao, $classes);
+    case 'int':
+    case 'integer':
+    case 'long':
+        if ($atributo->num == 0) {
+            return atributo_pk($atributo, $definicao, $classes); 
+        }
+        return atributo_int($atributo, $definicao, $classes);
+
+    case 'float':
+    case 'double':
+        return atributo_float($atributo, $definicao, $classes);
+        break;
+
+    case 'bool':
+    case 'boolean':
+        return atributo_bool($atributo, $definicao, $classes);
+        break;
+
+    case 'char':
+    case 'byte':
+        return atributo_char($atributo, $definicao, $classes);
+        break;
+
+    case 'string':
+        return atributo_string($atributo, $definicao, $classes);
+        break;
+    }
+
+    fwrite(STDERR, "Tipo desconhecido: {$atributo->tipo} (classe {$definicao->classe})\n");
+    return false;
+}
+
+
+//
+//     Monta um atributo inteiro e chave primaria
+//
+function atributo_pk($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+
+$singular = get_singular($definicao->classe);
+switch (get_genero($definicao->classe)) {
+case 'F':
+    $de = 'da';
+    break;
+case 'M':
+default:
+    $de = 'do';
+    break;
+}
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$atributo = new atributo('{$atributo->nome}', 'C&oacute;digo {$de} {$singular}', null);
+        \$atributo->set_tipo('int', false, 'PK');
+        \$atributo->set_intervalo(1, 1000000);
+        \$atributo->set_validacao(false, false, true);
+        \$this->adicionar_atributo(\$atributo);
+        unset(\$atributo);
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo int
+//
+function atributo_int($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+
+$singular = get_nome($atributo->nome);
+if (isset($atributo->enum)) {
+    $count  = count($atributo->enum);
+    $keys   = array_keys($atributo->enum);
+    $values = array_values($atributo->enum);
+    $min    = array_shift($keys);
+    $def    = get_constante(array_shift($values), $definicao);
+    $max = $count;
+} else {
+    $def = 0;
+    $min = 0;
+    $max = '1000000';
+}
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$atributo = new atributo('{$atributo->nome}', '{$singular}', {$def});
+        \$atributo->set_tipo('int', false, false);
+        \$atributo->set_intervalo({$min}, {$max});
+        \$atributo->set_validacao(false, false, false);
+        \$this->adicionar_atributo(\$atributo);
+        unset(\$atributo);
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo data
+//
+function atributo_data($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+
+$singular = get_nome($atributo->nome);
+$def = "'agora'";
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$atributo = new atributo('{$atributo->nome}', '{$singular}', {$def});
+        \$atributo->set_tipo('data', false, false);
+        \$atributo->set_campo_formulario('data_hora');
+        \$atributo->set_data_inicio(ATRIBUTO_DATA_RELATIVA, 10);
+        \$atributo->set_data_fim(ATRIBUTO_DATA_RELATIVA, 10);
+        \$atributo->set_validacao(false, false, false);
+        \$this->adicionar_atributo(\$atributo);
+        unset(\$atributo);
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo float
+//
+function atributo_float($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+$singular = get_nome($atributo->nome);
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$atributo = new atributo('{$atributo->nome}', '{$singular}', 0);
+        \$atributo->set_tipo('float', false);
+        \$atributo->set_intervalo(0, 1000000);
+        \$atributo->set_validacao(false, false, false);
+        \$this->adicionar_atributo(\$atributo);
+        unset(\$atributo);
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo bool
+//
+function atributo_bool($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+$singular = get_nome($atributo->nome);
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$atributo = new atributo('{$atributo->nome}', '{$singular}', false);
+        \$atributo->set_tipo('bool', false);
+        \$this->adicionar_atributo(\$atributo);
+        unset(\$atributo);
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo char
+//
+function atributo_char($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+$singular = get_nome($atributo->nome);
+if (isset($atributo->enum)) {
+    $count  = count($atributo->enum);
+    $values = array_values($atributo->enum);
+    $def    = get_constante(array_shift($values), $definicao);
+} else {
+    $def = "'-'";
+}
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$atributo = new atributo('{$atributo->nome}', '{$singular}', {$def});
+        \$atributo->set_tipo('char', false);
+        \$atributo->set_validacao(false, false, false);
+        \$this->adicionar_atributo(\$atributo);
+        unset(\$atributo);
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo string
+//
+function atributo_string($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+$singular = get_nome($atributo->nome);
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$atributo = new atributo('{$atributo->nome}', '{$singular}', '');
+        \$atributo->set_tipo('string', false);
+        \$atributo->set_intervalo(0, 128);
+        \$atributo->set_validacao(false, false, false);
+        \$this->adicionar_atributo(\$atributo);
+        unset(\$atributo);
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo 1:N
+//
+function atributo_un($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+if (isset($classes[$atributo->tipo])) {
+    $atributos_fk = $classes[$atributo->tipo]->atributos;
+    $fk = array_shift($atributos_fk);
+    $index = $fk->nome;
+    $impressao = get_campo_nome($atributo->tipo, $classes);
+} else {
+    $index     = '?';
+    $impressao = '?';
+}
+return <<<PHP
+        // CAMPO: {$atributo->nome}
+        \$this->adicionar_rel_un(
+            /* nome classe     */ '{$atributo->tipo}',
+            /* vetor gerado    */ '{$atributo->nome}',
+            /* index vetor     */ '{$index}',
+            /* campo impressao */ '{$impressao}',
+            /* campo ordem     */ '{$impressao}');
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo do tipo 1:1
+//
+function atributo_uu($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+if (isset($classes[$atributo->tipo])) {
+    $atributos_fk = $classes[$atributo->tipo]->atributos;
+    $fk = array_shift($atributos_fk);
+    $fk = $fk->nome;
+} else {
+    $fk = '?';
+}
+return <<<PHP
+        // CAMPO: {$fk} / {$atributo->nome}
+        \$this->adicionar_rel_uu(
+            /* nome classe     */ '{$atributo->tipo}',
+            /* nome objeto     */ '{$atributo->nome}');
+
+
+PHP;
+}
+
+
+//
+//     Monta um atributo implicito
+//
+function atributo_implicito($atributo, $definicao, $classes) {
+// Object $atributo: dados do atributo
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+$descricao = get_nome($atributo->nome);
+$metodo = 'get_'.$atributo->nome;
+return <<<PHP
+        // CAMPO IMPLICITO: {$atributo->nome}
+        \$this->adicionar_atributo_implicito('{$atributo->nome}', '{$descricao}', '{$metodo}');
+
+
+PHP;
+}
+
+
+//
+//     Monta a extensao e a salva
+//
+function salvar_extensao($arquivo, $autor, $definicao, $classes) {
+// String $arquivo: nome do arquivo
+// Object $autor: dados do autor
+// Object $definicao: dados da classe
+// Array[String => Object] $classes: dados das classes
+//
+    $extensao = cabecalho_extensao($definicao, $autor);
+    foreach ($definicao->metodos as $metodo) {
+        $extensao .= metodo_extensao($metodo, $definicao);
+    }
+    foreach ($definicao->atributos as $atributo) {
+        if (isset($atributo->enum)) {
+            $vt_enum = array();
+            foreach ($atributo->enum as $cod => $valor) {
+                $vt_enum[] = get_constante($valor, $definicao)." => '".texto::codificar($valor)."'";
+            }
+            $enum = implode(",\n            ", $vt_enum);
+$extensao .= <<<PHP
+
+    //
+    //     Retorno da enumeracao {$atributo->nome}
+    //
+    final public function get_vetor_{$atributo->nome}() {
+        return array(
+            {$enum}
+        );
+    }
+
+
+PHP;
+                         
+        }
+    }
+    $extensao .= rodape_extensao($definicao);
+
+    if (DEBUG_CONVERSOR & 2) {
+        echo $extensao."\n";
+        return;
+    }
+    file_put_contents($arquivo, $extensao);
+}
+
+
+//
+//     Monta o cabecalho do arquivo de uma extensao
+//
+function cabecalho_extensao($definicao, $autor) {
+// Object $definicao: dados da classe
+// Object $autor: dados do autor do arquivo
+//
+$data = strftime('%d/%m/%Y');
+$ano  = strftime('%Y');
+$comentario = isset($definicao->comentario) ? implode(' / ', $definicao->comentario) : 'Classe '.$definicao->classe;
+return <<<PHP
+<?php
+//
+// SIMP
+// Descricao: {$comentario}
+// Autor: {$autor->nome}
+// Orgao: {$autor->orgao}
+// E-mail: {$autor->email}
+// Versao: 1.0.0.0
+// Data: {$data}
+// Modificado: {$data}
+// Copyright (C) {$ano}  {$autor->nome}
+// License: LICENSE.TXT
+//
+final class {$definicao->classe} extends {$definicao->classe}_base {
+
+PHP;
+}
+
+
+//
+//     Monta o rodape de um arquivo extensao
+//
+function rodape_extensao($definicao) {
+// Object $definicao: dados da classe
+//
+return <<<PHP
+
+}//class
+PHP;
+}
+
+
+//
+//     Monta um metodo da extensao
+//
+function metodo_extensao($metodo, $definicao) {
+// Object $metodo: dados do metodo
+// Object $definicao: dados da classe
+//
+    $vt_params_php = array();
+    $doc = '';
+    if ($metodo->parametros && count($metodo->parametros)) {
+        foreach ($metodo->parametros as $parametro) {
+            $vt_params_php[] = '$'.$parametro;
+            $doc .= "    // ? \${$parametro}: ?\n";
+        }
+        $doc .= '    //';
+    }
+    $params_php = implode(', ', $vt_params_php);
+    $comentario = isset($metodo->comentario) ? implode(' / ', $metodo->comentario) : '?';
+return <<<PHP
+
+    //
+    //     {$comentario}
+    //
+    public function {$metodo->nome}({$params_php}) {
+{$doc}
+        //TODO
+    }
+
+
+PHP;
+}
+
+
+//
+//     Obtem uma sugestao de campo para usar como identificador da classe
+//
+function get_campo_nome($classe, $classes) {
+// String $classe: nome da classe desejada
+// Array[String => Object] $classes: vetor com os dados de todas as classes
+//
+    if (isset($classes[$classe])) {
+        $atributos_fk = $classes[$classe]->atributos;
+        $fk = array_shift($atributos_fk);
+        $possiveis_atributos = array('nome', 'titulo', 'descricao', 'nome_breve',
+                                     'sigla', 'detalhes', 'razao_social');
+        foreach ($possiveis_atributos as $possivel_atributo) {
+            foreach ($atributos_fk as $atributo_fk) {
+                if ($atributo_fk->nome == $possivel_atributo) {
+                    return $atributo_fk->nome;
+                }
+            }
+        }
+        foreach ($atributos_fk as $atributo_fk) {
+            if (isset($atributo_fk->objeto)) {
+                return $atributo_fk->nome.':'.get_campo_nome($atributo_fk->tipo, $classes);
+            } elseif (isset($atributo_fk->vetor)) {
+                return '?';
+            } else {
+                return $atributo_fk->nome;
+            }
+        }
+    }
+    return '?';
+}

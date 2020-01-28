@@ -1,0 +1,18 @@
+//
+//     Indica como um campo deve ser apresentado no formulario
+//
+public function campo_formulario(&$form, $campo, $valor) {
+// formulario $form: formulario que deve receber o campo
+// String $campo: nome do campo a ser inserido
+// Mixed $valor: valor padrao do campo
+//
+    if ($this->possui_atributo($campo)) {
+        $atributo = $this->get_definicao_atributo($campo);
+    }
+    switch ($campo) {
+    case '{{nome_campo}}':
+        $form->campo_{{text}}();
+        return true;
+    }
+    return parent::campo_formulario($form, $campo, $valor);
+}

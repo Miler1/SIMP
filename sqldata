@@ -1,0 +1,1 @@
+condicao_sql::data('{{atributo}}', '{{dd-mm-aaaa-hh-mm-ss}}')

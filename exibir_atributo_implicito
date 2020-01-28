@@ -1,0 +1,13 @@
+//
+//     Define a forma como um atributo implicito e' exibido
+//
+public function exibir_atributo_implicito($nome_atributo) {
+// String $nome_atributo: nome do atributo implicito a ser exibido
+//
+    switch ($nome_atributo) {
+    case '{{atributo}}':
+        $valor = {{codigo}}
+        return $valor;
+    }
+    return parent::exibir_atributo_implicito($nome_atributo);
+}

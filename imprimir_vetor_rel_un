@@ -1,0 +1,20 @@
+//
+//     Imprime um vetor da entidade (relacionamento 1:N)
+//     
+public function imprimir_vetor_rel_un($nome_vetor, $return = false, $imprimir_descricao = true) {
+// String $nome_vetor: nome do vetor
+// Bool $return: retornar ou imprimir o vetor
+// Bool $imprimir_descricao: imprime a descricao para cada item do vetor
+//
+    switch ($nome_vetor) {
+    case '{{vetor}}':
+        $valor = '';
+        {{codigo}}
+        if ($return) {
+            return $valor;
+        }
+        echo $valor;
+        return;
+    }
+    return parent::imprimir_vetor_rel_un($nome_vetor, $return, $imprimir_descricao);
+}

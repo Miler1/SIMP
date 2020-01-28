@@ -1,0 +1,2 @@
+$vt_{{nome}} = {{codigo}};
+$form->campo_checkbox({{name}}, {{id}}, $vt_{{nome}}, {{valores}}, {{label}});

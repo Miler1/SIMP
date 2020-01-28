@@ -1,0 +1,6 @@
+//
+//     Retorna o NOME DO ATRIBUTO (simples, implicito ou relacionamento 1:1) usado para identificar o objeto
+//
+public function get_campo_nome() {
+    return '{{atributo}}';
+}

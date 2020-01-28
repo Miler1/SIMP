@@ -1,0 +1,1 @@
+condicao_sql::except('{{atributo}}', array({{valores}}))

@@ -1,0 +1,56 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Converte uma string para outra em todo o Sistema
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.1.0.2
+// Data: 20/09/2010
+// Modificado: 14/05/2011
+// Copyright (C) 2010  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+// Obter argumentos
+$opt = getopt('c:');
+if (!isset($opt['c'])) {
+    fwrite(STDERR, 'Informe o nome da classe pelo argumento -c'.PHP_EOL);
+    exit(1);
+}
+
+$classe = $opt['c'];
+if (!simp_autoload($classe)) {
+    fwrite(STDERR, 'Erro: '.$e->getMessage().PHP_EOL);
+    exit(1);
+}
+
+// Buscar classes que apontam para a classe informada
+$relacionamentos = array();
+$entidades = listas::get_entidades();
+foreach ($entidades as $classe_verificada => $descricao) {
+    $obj = objeto::get_objeto($classe_verificada);
+    foreach ($obj->get_definicoes_rel_uu() as $fk => $def) {
+        if ($def->classe == $classe) {
+            $relacionamentos[$classe_verificada][$fk] = $def;
+        }
+    }
+}
+
+// Mostrar resultado
+if (empty($relacionamentos)) {
+    fwrite(STDOUT, 'Nenhum relacionamento com esta classe'.PHP_EOL);
+    exit(0);
+}
+fwrite(STDOUT, 'Classes relacionadas:'.PHP_EOL);
+foreach ($relacionamentos as $classe_relacionada => $atributos) {
+    foreach ($atributos as $fk => $def) {
+        $detalhes = $def->forte ? '{FK}' : '{OFK}';
+        echo $classe_relacionada.'->'.$fk.' '.$detalhes.PHP_EOL;
+    }
+}
+exit(0);

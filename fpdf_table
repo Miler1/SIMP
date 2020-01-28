@@ -1,0 +1,9 @@
+$pdf = new fpdf_table('{{P}}', '{{mm}}', '{{A4}}');
+$pdf->SetMargins({{esquerda}}, {{topo}}, {{direita}});
+$pdf->SetFont('{{Arial}}', '{{estilos}}', {{12}});
+$pdf->AddPage();
+
+{{codigo}}
+
+$pdf->Output('{{arquivo}}', '{{D}}');
+exit(0);

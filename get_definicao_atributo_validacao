@@ -1,0 +1,14 @@
+//
+//     Retorna a definicao de um atributo simples da classe para validacao
+//
+public function get_definicao_atributo_validacao($nome_atributo) {
+// String $nome_atributo: nome do atributo desejado
+//
+    switch ($nome_atributo) {
+    case '{{nome_atributo}}':
+        $atributo = new atributo('{{$nome_atributo}}', '{{descricao}}', {{padrao}});
+        {{codigo}}
+        return $atributo;
+    }
+    return parent::get_definicao_atributo($nome_atributo);
+}

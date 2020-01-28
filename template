@@ -1,0 +1,240 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Script que cria um template do gphpedit, gedit, geany ou eclipse
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.2.0.2
+// Data: 01/04/2009
+// Modificado: 24/05/2011
+// Copyright (C) 2009  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+
+$opt = getopt('t:a:');
+if (!isset($opt['t'])) {
+    fwrite(STDERR, 'Faltou informar o tipo de editor pelo argumento -t'.PHP_EOL.'Possiveis editores: gedit, gphpedit, eclipse'.PHP_EOL);
+    exit(1);
+}
+$tipo = $opt['t'];
+if (isset($opt['a'])) {
+    $f = fopen($opt['a'], 'w');
+} else {
+    $f = STDOUT;
+}
+
+$atalhos = get_atalhos();
+
+switch ($tipo) {
+case 'eclipse':
+    gerar_arquivo_eclipse($f, $atalhos);
+    exit(0);
+case 'geany':
+    gerar_arquivo_geany($f, $atalhos);
+    exit(0);
+case 'gedit':
+    gerar_arquivo_gedit($f, $atalhos);
+    exit(0);
+case 'gphpedit':
+    gerar_arquivo_gphpedit($f, $atalhos);
+    exit(0);
+}
+exit(1);
+
+
+//
+//     Obtem um vetor com os atalhos
+//
+function get_atalhos() {
+    $vetor = array();
+    $dir_base = dirname(__FILE__).'/atalhos/';
+    $dir = opendir($dir_base);
+    while (($item = readdir($dir)) !== false) {
+        if (is_dir($dir_base.'/'.$item) || $item == '.svn') {
+            continue;
+        }
+        $vetor[$item] = file_get_contents($dir_base.$item);
+    }
+    closedir($dir);
+    ksort($vetor);
+    return $vetor;
+}
+
+
+//
+//     Quebra um template
+//
+function quebrar($valor) {
+// String $valor: template
+//
+    $vetor = array();
+    $ultima_pos = 0;
+    $pos_abre = strpos($valor, '{{', $ultima_pos);
+    while ($pos_abre !== false) {
+        $vetor[] = substr($valor, $ultima_pos, $pos_abre - $ultima_pos);
+
+        $pos_fecha = strpos($valor, '}}', $pos_abre + 2) + 2;
+        $vetor[] = substr($valor, $pos_abre, $pos_fecha - $pos_abre);
+
+        $ultima_pos = $pos_fecha;
+        $pos_abre = strpos($valor, '{{', $ultima_pos);
+    }
+    $vetor[] = substr($valor, $ultima_pos);
+    return $vetor;
+}
+
+
+//
+//     Gera um template para o gphpedit
+//
+function gerar_arquivo_gphpedit($f, $atalhos) {
+// Resource $f: hanlde para o arquivo
+// Array[String => String] $atalhos: nome do atalho apontando para o codigo
+//
+    $tr = array(
+        "\n" => '\n',
+        "\t" => '\t'
+    );
+
+    /// Gerar arquivo
+    foreach ($atalhos as $chave => $valor) {
+        $primeiro = true;
+        $matches = quebrar($valor);
+        $saida = '';
+        foreach ($matches as $match) {
+            if (preg_match('/^{{([^\}]+)}}$/', $match, $m)) {
+                if ($primeiro) {
+                    $saida .= '|';
+                    $primeiro = false;
+                } else {
+                    $saida .= '?'.$m[1].'?';
+                }
+                
+            } else {
+                $saida .= $match;
+            }
+        }
+        $valor = strtr($saida, $tr);
+        fwrite($f, "{$chave}\t{$valor}\n");
+    }
+    return true;
+}
+
+
+//
+//     Gera um template para o geany
+//
+function gerar_arquivo_geany($f, $atalhos) {
+// Resource $f: hanlde para o arquivo
+// Array[String => String] $atalhos: nome do atalho apontando para o codigo
+//
+    $tr = array(
+        "\n" => '\n',
+        "\t" => '\t'
+    );
+
+    /// Gerar arquivo
+    fwrite($f, "# Arquivo gerado automaticamente pelo comando:\n");
+    fwrite($f, "# $ simp template -t geany\n");
+    fwrite($f, "[PHP]\n");
+    foreach ($atalhos as $chave => $valor) {
+        $matches = quebrar($valor);
+        $saida = '';
+        foreach ($matches as $match) {
+            if (preg_match('/^{{([^\}]+)}}$/', $match, $m)) {
+                $saida .= $m[1].'%cursor%';
+            } else {
+                $saida .= $match;
+            }
+        }
+        $valor = strtr($saida, $tr);
+        fwrite($f, "{$chave}={$valor}\n");
+    }
+    return true;
+}
+
+
+//
+//     Gera um template para o gedit
+//
+function gerar_arquivo_gedit($f, $atalhos) {
+// Resource $f: hanlde para o arquivo
+// Array[String => String] $atalhos: nome do atalho apontando para o codigo
+//
+    /// Gerar arquivo
+    $saida = <<<XML
+<?xml version='1.0' encoding='utf-8'?>
+<snippets language="php">
+XML;
+    fwrite($f, $saida);
+
+    foreach ($atalhos as $chave => $valor) {
+        $matches = quebrar($valor);
+
+        $tag = <<<XML
+<snippet>
+<text><![CDATA[%s]]></text>
+<tag>%s</tag>
+<description>%s</description>
+</snippet>
+XML;
+        $codigo = '';
+        $i = 1;
+        foreach ($matches as $match) {
+            if (preg_match('/^{{([^}]+)}}$/', $match, $m)) {
+                $codigo .= '${'.$i.':'.$m[1].'}';
+                $i += 1;
+            } else {
+                $codigo .= $match;
+            }
+        }
+        $saida = sprintf($tag, $codigo, str_replace('_', '', $chave), $chave);
+        fwrite($f, $saida);
+    }
+    $saida = <<<XML
+</snippets>
+XML;
+    fwrite($f, $saida);
+    return true;
+}
+
+
+//
+//     Gera um template para o eclipse
+//
+function gerar_arquivo_eclipse($f, $atalhos) {
+// Resource $f: hanlde para o arquivo
+// Array[String => String] $atalhos: nome do atalho apontando para o codigo
+//
+    /// Gerar arquivo
+    $saida = <<<XML
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<templates>
+XML;
+    fwrite($f, $saida);
+
+    foreach ($atalhos as $chave => $valor) {
+        $matches = quebrar($valor);
+
+        $tag = <<<XML
+<template autoinsert="true" context="php" deleted="false" description="SIMP/%s" enabled="true" name="%s"><![CDATA[%s]]></template>
+XML;
+        $codigo = '';
+        foreach ($matches as $match) {
+            if (preg_match('/^{{([^}]+)}}$/', $match, $m)) {
+                $codigo .= '${'.$m[1].'}';
+            } else {
+                $codigo .= str_replace('$', '$$', $match);
+            }
+        }
+        $saida = sprintf($tag, $chave, $chave, $codigo);
+        fwrite($f, $saida);
+    }
+    $saida = <<<XML
+</templates>
+XML;
+    fwrite($f, $saida);
+    return true;
+}

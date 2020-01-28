@@ -1,0 +1,6 @@
+//
+//     {{descricao}}
+//
+{{public static }}function {{funcao}}({{parametros}}) {
+    {{codigo}}
+}

@@ -1,0 +1,89 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: script para instalacao de uma classe de forma manual
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: Tecnolivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.1.0.1
+// Data: 09/11/2010
+// Modificado: 14/05/2011
+// Utilizacao: $ simp instalarclasse -c CLASSE [-t]
+// Copyright (C) 2010  Rubens Takiguti Ribeiro
+// Licenca: LICENCE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+$opt = getopt('c:t');
+if (!isset($opt['c'])) {
+    fwrite(STDERR, "Faltou informar a classe pelo parametro -c\n");
+    exit(1);
+}
+$classe = $opt['c'];
+$truncate = isset($opt['t']);
+
+if (simp_autoload($classe)) {
+    $obj = new $classe();
+} else {
+    fwrite(STDERR, "Classe invalida: {$classe}\n");
+    exit(2);
+}
+
+// Realizar truncate antes
+if ($truncate) {
+    fwrite(STDOUT, "Apagando elementos da classe {$classe}: ");
+    $dao = new objeto_dao();
+    if ($dao->truncate($obj)) {
+        fwrite(STDOUT, "OK\n");
+    } else {
+        fwrite(STDERR, "Erro\n");
+        imprimir_itens(STDERR, $dao->get_erros());
+    }
+}
+
+fwrite(STDOUT, "Instalando a classe {$classe}: ");
+$funcoes = instalacao::get_funcoes_instalacao($erros);
+if (!$funcoes) {
+    fwrite(STDERR, "Erro\n");
+    fwrite(STDERR, "Erro ao obter a lista de funcoes de instalacao\n");
+    exit(3);
+}
+if (!isset($funcoes[$classe])) {
+    fwrite(STDERR, "Erro\n");
+    fwrite(STDERR, "A classe {$classe} nao possui instalacao\n");
+    exit(4);
+}
+
+// Executar a instalacao
+$dados = $funcoes[$classe];
+$funcao = $dados->funcao;
+$instalou = $funcao($erros);
+if ($instalou) {
+    fwrite(STDOUT, "OK\n");
+} else {
+    fwrite(STDERR, "Erro\n");
+    imprimir_itens(STDERR, $erros);
+    exit(5);
+}
+exit(0);
+
+
+//
+//     Imprime mensagens no terminal recursivamente
+//
+function imprimir_itens($saida, $mensagens, $nivel = 0) {
+// resource $saida: saida padrao
+// String || Array[Type] $mensagens: mensagem ou vetor de mensagens
+// Int $nivel: nivel de identacao
+//
+    if (is_array($mensagens)) {
+        foreach ($mensagens as $mensagem) {
+            imprimir_itens($saida, $mensagem, $nivel + 1);
+        }
+    } elseif (is_string($mensagens)) {
+        fwrite($saida, str_repeat('  ', $nivel).'* '.strip_tags(texto::decodificar($mensagens))."\n");
+    }
+}

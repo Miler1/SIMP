@@ -1,0 +1,1 @@
+$form->campo_hora('{{prefixo}}', {{hora}}, {{minuto}}, {{segundo}}, {{label}});

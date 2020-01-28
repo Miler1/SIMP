@@ -1,0 +1,46 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Script que verifica quais arquivos nao estao sendo usado
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.0.0.0
+// Data: 15/04/2011
+// Modificado: 15/04/2011
+// Copyright (C) 2011  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+$ferramentas_usadas = array();
+
+// Obter os arquivos usados pelos grupos
+$arquivos_grupos = glob($CFG->dirclasses.'instalacao/permissao/*.ini');
+foreach ($arquivos_grupos as $arquivo_grupo) {
+    $permissoes_ini = parse_ini_file($arquivo_grupo, true);
+    $cod_grupo = $permissoes_ini['cod_grupo'];
+    unset($permissoes_ini['cod_grupo']);
+    foreach ($permissoes_ini as $modulo => $permissoes_modulo) {
+        foreach ($permissoes_modulo as $arquivo => $visivel) {
+            if (!isset($ferramentas_usadas[$modulo][$arquivo])) {
+                $ferramentas_usadas[$modulo][$arquivo] = array();
+            }
+            $ferramentas_usadas[$modulo][$arquivo][$cod_grupo] = true;
+        }
+    }
+}
+
+// Verificar quais arquivos nao foram usados
+$arquivos_ini = parse_ini_file($CFG->dirclasses.'instalacao/arquivo.ini', true);
+foreach ($arquivos_ini as $modulo => $arquivos_modulo) {
+    foreach ($arquivos_modulo as $arquivo => $descricao) {
+        if (!isset($ferramentas_usadas[$modulo][$arquivo])) {
+            fwrite(STDOUT, $modulo.'/'.$arquivo.PHP_EOL);
+        }
+    }
+}
+exit(0);

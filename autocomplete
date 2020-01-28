@@ -1,0 +1,479 @@
+#
+# SIMP
+# Descricao: script que especifica a forma de auto-completar os comandos
+# Autor: Rubens Takiguti Ribeiro
+# Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+# E-mail: rubens@tecnolivre.com.br
+# Versao: 1.0.0.2
+# Data: 14/05/2011
+# Modificado: 16/06/2011
+# License: LICENSE.TXT
+# Copyright (C) 2011  Rubens Takiguti Ribeiro
+#
+
+
+#
+#     Obtem a lista de classes entidade
+#
+_simp_get_classes() {
+    local simp opts dirweb i item
+    opts=""
+    simp="$COMP_WORDS"
+    dirweb=$($simp config --dirweb)
+    for i in "${dirweb}/classes/extensao/"*.class.php
+    do
+        item=$(basename "$i" .class.php)
+        opts="$opts $item"
+    done
+    echo "$opts"
+    return 0
+}
+
+
+#
+#     Autocomplete para mostrar os comandos do Simp
+#
+_simp_comandos() {
+    local simp cur opts dirbin i comando
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    opts=""
+    simp="$COMP_WORDS"
+    dirbin=$($simp config --dirbin)
+    for i in "$dirbin/"*
+    do
+        if [ -f $i ]
+        then
+           comando=$(basename "$i")
+           opts="$opts $comando"
+        fi
+    done
+
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando ajuda
+#
+_simp_ajuda() {
+    if (( $COMP_CWORD != 2 ))
+    then
+        return 0
+    fi
+    _simp_comandos
+}
+
+
+#
+#     Autocomplete para o comando checarsintaxe
+#
+_simp_checarsintaxe() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "$prev" in
+    "-a"|"--arquivo")
+        COMPREPLY=( $(compgen -f -- "${cur}") )
+        return 0
+        ;;
+    "-d"|"--diretorio")
+        COMPREPLY=( $(compgen -d -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="--arquivo --diretorio --sistema --verbose"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando config
+#
+_simp_config() {
+    local cur opts
+
+    if (( $COMP_CWORD != 2 ))
+    then
+        return 0
+    fi
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    opts="--dirhome --dirbin --dirdoc --dirextras --dirman --dirweb --versao"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando conversor
+#
+_simp_conversor() {
+    local cur
+
+    if [[ $COMP_CWORD != 2 && $COMP_CWORD != 3 ]]
+    then
+        return 0
+    fi
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    COMPREPLY=( $(compgen -d -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando criarbase
+#
+_simp_criarbase() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ $prev == -* ]]
+    then
+        return 0
+    fi
+
+    opts="-s -P -b -h -u -p"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando dados
+#
+_simp_dados() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-a"|"-r")
+        opts="-u -o"
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+    esac
+
+    opts="-au -ru -ao -ro -d"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando dump
+#
+_simp_dump() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "$prev" in
+    "-a"|"--arquivo")
+        COMPREPLY=( $(compgen -f -- "${cur}") )
+        return 0
+        ;;
+    "-s"|"--sgbd")
+        return 0
+        ;;
+    "-c"|"-r"|"--classes"|"--classes-ignoradas")
+        opts=$(_simp_get_classes)
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    "-d"|"-c"|"-i"|"-x"|"-l"|"--drop-table"|"--create-table"|"--insert"|"--comentarios"|"--legivel")
+        opts="s n"
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="--arquivo --sgbd --classes --classes-ignoradas --drop-table --create-table --insert --comentarios --legivel"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando instalarclasse
+#
+_simp_instalarclasse() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-c")
+        opts=$(_simp_get_classes)
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="-c -t"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando ordemtabelas
+#
+_simp_ordemtabelas() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-s")
+        return 0
+        ;;
+    esac
+
+    opts="-r -s"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando permissoes
+#
+_simp_permissoes() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-g")
+        return 0
+        ;;
+    esac
+
+    opts="-g"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando relacionamentos
+#
+_simp_relacionamentos() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-c")
+        opts=$(_simp_get_classes)
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="-c"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando replace
+#
+_simp_replace() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-a"|"-d"|"-i")
+        return 0
+        ;;
+    esac
+
+    opts="-a -d -t -n -f -i"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando sistema
+#
+_simp_sistema() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "--tipo"|"-t")
+        opts="json serialize ini plain"
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="-t --tipo"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando sql
+#
+_simp_sql() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-a")
+        COMPREPLY=( $(compgen -f -- "${cur}") )
+        return 0
+        ;;
+    "-d")
+        opts="mysql pdo_mysql pgsql pdo_pgsql"
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="-a -d"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando template
+#
+_simp_template() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "-a")
+        COMPREPLY=( $(compgen -f -- "${cur}") )
+        return 0
+        ;;
+    "-t")
+        opts="eclipse geany gedit gphpedit"
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="-a -t"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete para o comando usuario
+#
+_simp_usuario() {
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case $prev in
+    "--tipo"|"-t")
+        opts="json serialize ini plain"
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+        ;;
+    esac
+
+    opts="-t --tipo"
+    COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+}
+
+
+#
+#     Autocomplete principal
+#
+_simp() {
+    local cur prev comando
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    # Comando principal
+    if (( $COMP_CWORD == 1 ))
+    then
+        _simp_comandos
+        return 0
+    fi
+
+    comando="${COMP_WORDS[1]}"
+
+    # Parametro
+    case "$comando" in
+    "ajuda")
+        _simp_ajuda
+        return 0
+        ;;
+    "checarsintaxe")
+        _simp_checarsintaxe
+        return 0
+        ;;
+    "config")
+        _simp_config
+        return 0
+        ;;
+    "conversor")
+        _simp_conversor
+        return 0
+        ;;
+    "criarbase")
+        _simp_criarbase
+        return 0
+        ;;
+    "dados")
+        _simp_dados
+        return 0
+        ;;
+    "dump")
+        _simp_dump
+        return 0
+        ;;
+    "instalarclasse")
+        _simp_instalarclasse
+        return 0
+        ;;
+    "ordemtabelas")
+        _simp_ordemtabelas
+        return 0
+        ;;
+    "permissoes")
+        _simp_permissoes
+        return 0
+        ;;
+    "relacionamentos")
+        _simp_relacionamentos
+        return 0
+        ;;
+    "replace")
+        _simp_replace
+        return 0
+        ;;
+    "sistema")
+        _simp_sistema
+        return 0
+        ;;
+    "sql")
+        _simp_sql
+        return 0
+        ;;
+    "template")
+        _simp_template
+        return 0
+        ;;
+    "usuario")
+        _simp_usuario
+        return 0
+        ;;
+    *)
+        return 0
+        ;;
+    esac
+}
+
+# Registrar autocomplete principal
+complete -F _simp simp

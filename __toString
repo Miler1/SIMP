@@ -1,0 +1,6 @@
+//
+//     Define a forma como um objeto sera exibido
+//
+public function __toString() {
+    {{codigo}}
+}

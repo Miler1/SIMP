@@ -1,0 +1,7 @@
+//
+//     Cria os atributos da classe
+//
+protected function definir_atributos() {
+
+    {{codigo}}
+}

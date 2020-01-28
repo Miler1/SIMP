@@ -1,0 +1,1 @@
+condicao_sql::sql_and({{$vt_condicoes}})

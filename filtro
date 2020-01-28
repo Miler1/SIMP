@@ -1,0 +1,40 @@
+//
+//     Imprime um formulario de filtro
+//
+function imprimir_formulario($dados) {
+// stdClass $dados: dados submetidos
+//
+    global $CFG;
+    $action = $CFG->site;
+    link::normalizar($action, true);
+
+    $padrao = array(
+        '{{campo}}' => {{valor}}
+    );
+    $dados = formulario::montar_dados($padrao, $dados);
+
+    $form = new formulario($action, '{{id}}');
+    $form->titulo_formulario('Formul&aacute;rio de Filtro');
+    $form->campo_{{campo}}({{parametros}});
+    $form->campo_submit('enviar', 'enviar', 'Buscar');
+    $form->imprimir();
+}
+
+
+//
+//     Monta as condicoes de filtragem
+//
+function montar_condicoes($dados, &$erros) {
+// stdClass $dados: dados submetidos
+// Array[String] $erros: erros ocorridos
+//
+    $vt_condicoes = array();
+
+    if ($dados->{{campo}}) {
+        $vt_condicoes[] = condicao_sql::montar('{{atributo}}', '{{=}}', {{valor}});
+    }
+
+    $condicoes = condicao_sql::sql_and($vt_condicoes);
+
+    return $condicoes;
+}

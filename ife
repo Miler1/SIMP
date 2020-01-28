@@ -1,0 +1,5 @@
+if ({{condicao}}) {
+    {{codigo if}}
+} else {
+    {{codigo_else}}
+}

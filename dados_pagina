@@ -1,0 +1,3 @@
+/// Dados da Pagina
+$dados_pagina = new stdClass();
+$dados_pagina->titulo = '{{titulo}}';

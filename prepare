@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# SIMP
+# Descricao: script de preparacao do sistema para instalacao
+# Autor: Rubens Takiguti Ribeiro
+# Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+# E-mail: rubens@tecnolivre.com.br
+# Versao: 1.1.0.1
+# Data: 11/10/2007
+# Modificado: 10/11/2010
+# License: LICENSE.TXT
+# Copyright (C) 2007  Rubens Takiguti Ribeiro
+#
+
+# Obter argumentos e preencher o dirroot com o diretorio raiz do sistema
+if [ $SIMP_SCRIPT ]
+then
+    cmd="$SIMP_SCRIPT"
+else
+    cmd=$(type -P simp) || (echo "Comando simp nao encontrado" 1>&2 && exit 1)
+fi
+
+dirroot=$("$cmd" config --dirweb) || (echo "O diretorio ${dirroot} nao existe" 1>&2 && exit 1)
+
+# PASSO 1: sobrescrever o arquivo de configuracoes
+readonly cmd_cp=$(type -P cp) || (echo "Erro ao obter comando cp" 1>&2 && exit 2)
+"$cmd_cp" -f "${dirroot}config.bk.php" "${dirroot}config.php" &> /dev/null
+if (( $? != 0 ))
+then
+    echo "Erro ao copiar config.bk.php sobre config.php" 1>&2
+    exit 3
+fi
+
+# PASSO 2: definir permissoes sobre os arquivos necessarios
+readonly cmd_chmod=$(type -P chmod) || (echo "Erro ao obter comando chmod" 1>&2 && exit 4)
+"$cmd_chmod" 777 "${dirroot}/arquivos" "${dirroot}/config."* &> /dev/null
+if (( $? != 0 ))
+then
+    echo "Erro ao colocar permissoes sobre arquivos /config.* e diretorio /arquivos" 1>&2
+    exit 4
+fi
+
+echo 'Pronto para instalar!'
+exit 0

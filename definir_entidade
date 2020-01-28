@@ -1,0 +1,12 @@
+//
+//     Cria a definicao de entidade
+//
+protected function definir_entidade() {
+    $this->criar_entidade(
+        /* Nome Entidade   */ '{{singular}}',
+        /* Entidade Plural */ '{{plural}}',
+        /* Genero          */ '{{M}}',
+        /* Classe          */ '{{classe}}',
+        /* Tabela          */ '{{tabela}}',
+        /* Desc. Tabela    */ 'Tabela de {{descricao}}');
+}

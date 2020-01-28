@@ -1,0 +1,1 @@
+http::cabecalho('{{text/css}}', '{{arquivo}}', '{{inline}}', {{tempo_expira}});

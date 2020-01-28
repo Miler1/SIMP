@@ -1,0 +1,14 @@
+// 
+//     Converte as componentes de um atributo no respectivo valor do atributo final
+//
+protected function converter_componente($campo, $valor, $valores) {
+// String $campo: nome do campo
+// Mixed $valor: valor do campo
+// Object $valores: valores a serem convertidos
+//
+    switch ($campo) {
+    case {{valor}}:
+        {{codigo}}
+    }
+    return parent::converter_componente($campo, $valor, $valores);
+}

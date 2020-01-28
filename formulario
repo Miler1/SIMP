@@ -1,0 +1,3 @@
+$form = new formulario({{$action}}, '{{id}}');
+$form->campo_{{tipo}}({{parametros}});
+$form->imprimir();

@@ -1,0 +1,18 @@
+//
+//     Indica se o formulario de um registro pode ser acessado ou nao por um usuario
+//
+public function pode_acessar_formulario(&$usuario, &$motivo = '') {
+// usuario $usuario: usuario a ser testado
+// String $motivo: motivo pelo qual nao se pode acessar o registro
+//
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_{{inserir}}():
+        if ({{condicoes}}) {
+            $r = false;
+            $motivo = '{{motivo}}';
+        }
+        break;
+    }
+    return $r;
+}

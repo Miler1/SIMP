@@ -1,0 +1,56 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: script para instalacao das classes de forma manual
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: Tecnolivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.1.0.2
+// Data: 12/12/2007
+// Modificado: 10/11/2010
+// Utilizacao: $ simp instalarclasses
+// Copyright (C) 2007  Rubens Takiguti Ribeiro
+// Licenca: LICENCE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+fwrite(STDOUT, "Instalando as classes: ");
+$instalou = instalacao::instalar_classes($erros, $avisos);
+fwrite(STDOUT, ($instalou ? "OK\n" : "Erro\n"));
+
+if (!empty($erros)) {
+    fwrite(STDERR, "Erros:\n");
+    imprimir_itens(STDERR, $erros);
+    fwrite(STDERR, "Todas as operacoes de sucesso foram canceladas\n");
+} elseif (!empty($avisos)) {
+    fwrite(STDOUT, "Avisos:\n");
+    foreach ($avisos as $aviso) {
+        fwrite(STDOUT, '* '.strip_tags(texto::decodificar($aviso))."\n");
+    }
+}
+
+if (!$instalou) {
+    exit(2);
+}
+exit(0);
+
+
+//
+//     Imprime mensagens no terminal recursivamente
+//
+function imprimir_itens($saida, $mensagens, $nivel = 0) {
+// resource $saida: saida padrao
+// String || Array[Type] $mensagens: mensagem ou vetor de mensagens
+// Int $nivel: nivel de identacao
+//
+    if (is_array($mensagens)) {
+        foreach ($mensagens as $mensagem) {
+            imprimir_itens($saida, $mensagem, $nivel + 1);
+        }
+    } elseif (is_string($mensagens)) {
+        fwrite($saida, str_repeat('  ', $nivel).'* '.strip_tags(texto::decodificar($mensagens))."\n");
+    }
+}

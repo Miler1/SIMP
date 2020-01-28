@@ -1,0 +1,65 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Script que obtem o nome e descricao do sistema
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.0.0.0
+// Data: 11/04/2011
+// Modificado: 11/04/2011
+// Copyright (C) 2011  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+
+/// Tipos de retorno
+define('SUCESSO',  0);
+define('ERRO_XML', 1);
+
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+$dirextras = `$simp config --dirextras`;
+$xml = simplexml_load_file($dirextras.'sistema.xml');
+if (!$xml) {
+    fwrite(STDERR, "Erro ao carregar dados do sistema\n");
+    fwrite(STDERR, "Ja configurou os dados com \"simp dados\" ?\n");
+    exit(ERRO_XML);
+}
+
+// Obter argumentos
+$tipos_opcoes = array(
+    array('t:', 'tipo:')
+);
+$padrao = array(
+    'tipo' => 'json',
+);
+$opcoes = util_cli::get_argumentos($tipos_opcoes, $padrao);
+
+
+// Obter dados do usuario
+$sistema = new stdClass();
+$sistema->nome = strval($xml->dados->nome);
+$sistema->descricao = strval($xml->dados->descricao);
+
+switch ($opcoes['tipo']) {
+case 'json':
+    echo json_encode($sistema);
+    break;
+case 'serialize':
+    echo serialize($sistema);
+    break;
+case 'ini':
+    foreach ($sistema as $k => $v) {
+        printf("%s='%s'\n", $k, addslashes($v));
+    }
+    break;
+case 'plain':
+    foreach ($sistema as $v) {
+        echo $v.PHP_EOL;
+    }
+    break;
+}
+exit(SUCESSO);

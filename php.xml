@@ -1,0 +1,780 @@
+<?xml version='1.0' encoding='utf-8'?>
+<snippets language="php"><snippet>
+<text><![CDATA[//
+//     Obtem um atributo da classe
+//
+public function __get($atributo) {
+// String $atributo: nome do atributo a ser obtido
+//
+    switch ($atributo) {
+    case '${1:atributo}':
+        ${2:codigo}
+    }
+}]]></text>
+<tag>get</tag>
+<description>__get</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Define o valor de um atributo da classe
+//
+public function __set($atributo, $valor) {
+// String $atributo: nome do atributo a ser definido
+// Mixed $valor: valor do atributo
+//
+    switch ($atributo) {
+    case '${1:atributo}':
+        ${2:codigo}
+    }
+}]]></text>
+<tag>set</tag>
+<description>__set</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Define a forma como um objeto sera exibido
+//
+public function __toString() {
+    ${1:codigo}
+}]]></text>
+<tag>toString</tag>
+<description>__toString</description>
+</snippet><snippet>
+<text><![CDATA[mensagem::comentario(${1:$CFG->site}, ${2:$ajuda});]]></text>
+<tag>ajuda</tag>
+<description>ajuda</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_aviso('${1:aviso}');]]></text>
+<tag>campoaviso</tag>
+<description>campo_aviso</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_bool(${1:name}, ${2:id}, ${3:label}, ${4:valor});]]></text>
+<tag>campobool</tag>
+<description>campo_bool</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_busca(${1:name}, ${2:id}, ${3:classe}, ${4:campo}, ${5:valor}, ${6:condicoes}, ${7:128}, ${8:30}, ${9:label});]]></text>
+<tag>campobusca</tag>
+<description>campo_busca</description>
+</snippet><snippet>
+<text><![CDATA[$vt_${1:nome} = ${2:codigo};
+$form->campo_checkbox(${3:name}, ${4:id}, $vt_${5:nome}, ${6:valores}, ${7:label});]]></text>
+<tag>campocheckbox</tag>
+<description>campo_checkbox</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_data('${1:prefixo}', ${2:dia}, ${3:mes}, ${4:ano}, ${5:label}, ${6:anos_passado}, ${7:anos_futuro});]]></text>
+<tag>campodata</tag>
+<description>campo_data</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_file(${1:name}, ${2:id}, ${3:label});]]></text>
+<tag>campofile</tag>
+<description>campo_file</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Indica como um campo deve ser apresentado no formulario
+//
+public function campo_formulario(&$form, $campo, $valor) {
+// formulario $form: formulario que deve receber o campo
+// String $campo: nome do campo a ser inserido
+// Mixed $valor: valor padrao do campo
+//
+    if ($this->possui_atributo($campo)) {
+        $atributo = $this->get_definicao_atributo($campo);
+    }
+    switch ($campo) {
+    case '${1:nome_campo}':
+        $form->campo_${2:text}();
+        return true;
+    }
+    return parent::campo_formulario($form, $campo, $valor);
+}]]></text>
+<tag>campoformulario</tag>
+<description>campo_formulario</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_hidden(${1:name}, ${2:valor});]]></text>
+<tag>campohidden</tag>
+<description>campo_hidden</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_hierarquico(${1:name}, ${2:id}, ${3:link}, ${4:valor}, ${5:128}, ${6:30}, ${7:label});]]></text>
+<tag>campohierarquico</tag>
+<description>campo_hierarquico</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_hora('${1:prefixo}', ${2:hora}, ${3:minuto}, ${4:segundo}, ${5:label});]]></text>
+<tag>campohora</tag>
+<description>campo_hora</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_image(${1:name}, ${2:id}, ${3:src}, ${4:label});]]></text>
+<tag>campoimage</tag>
+<description>campo_image</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_informacao('${1:informacao}');]]></text>
+<tag>campoinformacao</tag>
+<description>campo_informacao</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_password(${1:name}, ${2:id}, ${3:128}, ${4:30}, ${5:label});]]></text>
+<tag>campopassword</tag>
+<description>campo_password</description>
+</snippet><snippet>
+<text><![CDATA[$vt_${1:nome} = ${2:codigo};
+$form->campo_radio(${3:name}, ${4:id}, $vt_${5:nome}, ${6:valor}, ${7:label});]]></text>
+<tag>camporadio</tag>
+<description>campo_radio</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_relacionamento(${1:name}, ${2:id}, ${3:classe}, ${4:campo_preencher}, ${5:campo_exibir}, ${6:condicoes}, ${7:valor}, ${8:128}, ${9:30}, ${10:label});]]></text>
+<tag>camporelacionamento</tag>
+<description>campo_relacionamento</description>
+</snippet><snippet>
+<text><![CDATA[$vt_${1:nome} = ${2:codigo};
+$form->campo_select(${3:name}, ${4:id}, $vt_${5:nome}, ${6:valor}, ${7:label});]]></text>
+<tag>camposelect</tag>
+<description>campo_select</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_submit('${1:enviar}', '${2:enviar}', '${3:Enviar}');]]></text>
+<tag>camposubmit</tag>
+<description>campo_submit</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_telefone('${1:prefixo}', ${2:ddd}, ${3:numero}, ${4:label});]]></text>
+<tag>campotelefone</tag>
+<description>campo_telefone</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_telefone_comercial('${1:prefixo}', ${2:ddd}, ${3:numero}, ${4:ramal}, ${5:label});]]></text>
+<tag>campotelefonecomercial</tag>
+<description>campo_telefone_comercial</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_text(${1:name}, ${2:id}, ${3:valor}, ${4:128}, ${5:30}, ${6:label});]]></text>
+<tag>campotext</tag>
+<description>campo_text</description>
+</snippet><snippet>
+<text><![CDATA[$form->campo_textarea(${1:name}, ${2:id}, ${3:$valor}, 30, 5, ${4:label});]]></text>
+<tag>campotextarea</tag>
+<description>campo_textarea</description>
+</snippet><snippet>
+<text><![CDATA[class ${1:classe} {
+    
+}//class]]></text>
+<tag>class</tag>
+<description>class</description>
+</snippet><snippet>
+<text><![CDATA[<?php
+//
+// SIMP
+// Descricao: ${1:descricao}
+// Autor: ${2:autor}
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: ${3:email}@tecnolivre.com.br
+// Versao: 1.0.0.0
+// Data: ${4:data}
+// Modificado: ${5:data}
+// Copyright (C) ${6:ano}  ${7:autor}
+// License: LICENSE.TXT
+//
+]]></text>
+<tag>comentario</tag>
+<description>comentario</description>
+</snippet><snippet>
+<text><![CDATA[$vt_condicoes = array();
+$vt_condicoes[] = condicao_sql::montar('${1:atributo}', '${2:=}', ${3:valor});
+$vt_condicoes[] = condicao_sql::montar('${4:atributo}', '${5:=}', ${6:valor});
+$vt_condicoes[] = condicao_sql::montar('${7:atributo}', '${8:=}', ${9:valor});
+$vt_condicoes[] = condicao_sql::montar('${10:atributo}', '${11:=}', ${12:valor});
+$vt_condicoes[] = condicao_sql::montar('${13:atributo}', '${14:=}', ${15:valor});
+$condicoes = condicao_sql::sql_${16:and}($vt_condicoes);]]></text>
+<tag>condicoes</tag>
+<description>condicoes</description>
+</snippet><snippet>
+<text><![CDATA[$vt_condicoes = array();
+$vt_condicoes[] = condicao_sql::montar('${1:atributo}', '${2:=}', ${3:valor});
+$vt_condicoes[] = condicao_sql::montar('${4:atributo2}', '${5:=}', ${6:valor2});
+$vt_condicoes[] = condicao_sql::montar('${7:atributo3}', '${8:=}', ${9:valor3});
+$condicoes = condicao_sql::sql_and($vt_condicoes);
+$campos = array(
+    '${10:campo}'
+);
+$ordem = array(
+    '${11:ordem}' => ${12:true}
+);
+$vt_${13:classe} = objeto::get_objeto('${14:classe}')->consultar_varios($condicoes, $campos, $ordem);]]></text>
+<tag>consultarvarios</tag>
+<description>consultar_varios</description>
+</snippet><snippet>
+<text><![CDATA[// 
+//     Converte as componentes de um atributo no respectivo valor do atributo final
+//
+protected function converter_componente($campo, $valor, $valores) {
+// String $campo: nome do campo
+// Mixed $valor: valor do campo
+// Object $valores: valores a serem convertidos
+//
+    switch ($campo) {
+    case ${1:valor}:
+        ${2:codigo}
+    }
+    return parent::converter_componente($campo, $valor, $valores);
+}]]></text>
+<tag>convertercomponente</tag>
+<description>converter_componente</description>
+</snippet><snippet>
+<text><![CDATA[$vt_condicoes = array();
+$vt_condicoes[] = condicao_sql::montar('${1:atributo}', '${2:=}', ${3:valor});
+$vt_condicoes[] = condicao_sql::montar('${4:atributo2}', '${5:=}', ${6:valor2});
+$vt_condicoes[] = condicao_sql::montar('${7:atributo3}', '${8:=}', ${9:valor3});
+$condicoes = condicao_sql::sql_and($vt_condicoes);
+$campos = array(
+    '${10:campo}'
+);
+$ordem = array(
+    '${11:ordem}' => ${12:true}
+);
+$vt_${13:classe} = objeto::get_objeto('${14:classe}')->consultar_varios($condicoes, $campos, $ordem);]]></text>
+<tag>cv</tag>
+<description>cv</description>
+</snippet><snippet>
+<text><![CDATA[/// Dados do Formulario
+$dados_form = new stdClass();
+$dados_form->${1:atributo} = ${2:valor}]]></text>
+<tag>dadosform</tag>
+<description>dados_form</description>
+</snippet><snippet>
+<text><![CDATA[/// Dados Gerais
+$dados_gerais = new stdClass();
+$dados_gerais->${1:atributo} = ${2:valor};]]></text>
+<tag>dadosgerais</tag>
+<description>dados_gerais</description>
+</snippet><snippet>
+<text><![CDATA[/// Dados da Lista
+$dados_lista = new stdClass();
+$dados_lista->opcoes = array('exibir', 'alterar', 'excluir');
+$dados_lista->campos = array(${1:campos});]]></text>
+<tag>dadoslista</tag>
+<description>dados_lista</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Retorna um vetor com os dados da opcao (icone) que aparece na lista de entidades
+//
+public function dados_opcao($opcao, $modulo) {
+// String $opcao: identificador da opcao
+// String $modulo: nome do modulo
+//
+    $dados = new stdClass();
+
+    switch ($opcao) {
+    case '${1:opcao}':
+        $dados->icone     = icone::endereco('${2:icone}');
+        $dados->arquivo   = '${3:arquivo}.php';
+        $dados->modulo    = $modulo;
+        $dados->descricao = '${4:descricao}';
+        $dados->id        = '';
+        $dados->class     = '';
+        return $dados;
+    }
+
+    return parent::dados_opcao($opcao, $modulo);
+}]]></text>
+<tag>dadosopcao</tag>
+<description>dados_opcao</description>
+</snippet><snippet>
+<text><![CDATA[/// Dados da Pagina
+$dados_pagina = new stdClass();
+$dados_pagina->titulo = '${1:titulo}';
+]]></text>
+<tag>dadospagina</tag>
+<description>dados_pagina</description>
+</snippet><snippet>
+<text><![CDATA[define('${1:nome}', ${2:valor});]]></text>
+<tag>define</tag>
+<description>define</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Cria os atributos da classe
+//
+protected function definir_atributos() {
+
+    ${1:codigo}
+}]]></text>
+<tag>definiratributos</tag>
+<description>definir_atributos</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Cria a definicao de entidade
+//
+protected function definir_entidade() {
+    $this->criar_entidade(
+        /* Nome Entidade   */ '${1:singular}',
+        /* Entidade Plural */ '${2:plural}',
+        /* Genero          */ '${3:M}',
+        /* Classe          */ '${4:classe}',
+        /* Tabela          */ '${5:tabela}',
+        /* Desc. Tabela    */ 'Tabela de ${6:descricao}');
+}]]></text>
+<tag>definirentidade</tag>
+<description>definir_entidade</description>
+</snippet><snippet>
+<text><![CDATA[do {
+    ${1:codigo}
+} while (${2:condicao});]]></text>
+<tag>do</tag>
+<description>do</description>
+</snippet><snippet>
+<text><![CDATA[util::dump(${1:variavel});]]></text>
+<tag>dump</tag>
+<description>dump</description>
+</snippet><snippet>
+<text><![CDATA[else {
+    ${1:codigo}
+}]]></text>
+<tag>else</tag>
+<description>else</description>
+</snippet><snippet>
+<text><![CDATA[elseif (${1:condicao}) {
+    ${2:codigo}
+}]]></text>
+<tag>elseif</tag>
+<description>elseif</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Define a forma como um atributo simples e' exibido
+//
+public function exibir_atributo($nome_atributo) {
+// String $nome_atributo: nome do atributo a ser exibido
+//
+    switch ($nome_atributo) {
+    case '${1:atributo}':
+        $valor = ${2:codigo}
+        return $valor;
+    }
+    return parent::exibir_atributo($nome_atributo);
+}]]></text>
+<tag>exibiratributo</tag>
+<description>exibir_atributo</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Define a forma como um atributo implicito e' exibido
+//
+public function exibir_atributo_implicito($nome_atributo) {
+// String $nome_atributo: nome do atributo implicito a ser exibido
+//
+    switch ($nome_atributo) {
+    case '${1:atributo}':
+        $valor = ${2:codigo}
+        return $valor;
+    }
+    return parent::exibir_atributo_implicito($nome_atributo);
+}]]></text>
+<tag>exibiratributoimplicito</tag>
+<description>exibir_atributo_implicito</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Imprime um formulario de filtro
+//
+function imprimir_formulario($dados) {
+// stdClass $dados: dados submetidos
+//
+    global $CFG;
+    $action = $CFG->site;
+    link::normalizar($action, true);
+
+    $padrao = array(
+        '${1:campo}' => ${2:valor}
+    );
+    $dados = formulario::montar_dados($padrao, $dados);
+
+    $form = new formulario($action, '${3:id}');
+    $form->titulo_formulario('Formul&aacute;rio de Filtro');
+    $form->campo_${4:campo}(${5:parametros});
+    $form->campo_submit('enviar', 'enviar', 'Buscar');
+    $form->imprimir();
+}
+
+
+//
+//     Monta as condicoes de filtragem
+//
+function montar_condicoes($dados, &$erros) {
+// stdClass $dados: dados submetidos
+// Array[String] $erros: erros ocorridos
+//
+    $vt_condicoes = array();
+
+    if ($dados->${6:campo}) {
+        $vt_condicoes[] = condicao_sql::montar('${7:atributo}', '${8:=}', ${9:valor});
+    }
+
+    $condicoes = condicao_sql::sql_and($vt_condicoes);
+
+    return $condicoes;
+}
+]]></text>
+<tag>filtro</tag>
+<description>filtro</description>
+</snippet><snippet>
+<text><![CDATA[for (${1:atribuicao}; ${2:condicao}; ${3:incremento}) {
+    ${4:codigo}
+}]]></text>
+<tag>for</tag>
+<description>for</description>
+</snippet><snippet>
+<text><![CDATA[foreach (${1:variavel} as ${2:chave} => ${3:valor}) {
+    ${4:codigo}
+}]]></text>
+<tag>foreach</tag>
+<description>foreach</description>
+</snippet><snippet>
+<text><![CDATA[$form = new formulario(${1:$action}, '${2:id}');
+$form->campo_${3:tipo}(${4:parametros});
+$form->imprimir();]]></text>
+<tag>formulario</tag>
+<description>formulario</description>
+</snippet><snippet>
+<text><![CDATA[$pdf = new fpdf_table('${1:P}', '${2:mm}', '${3:A4}');
+$pdf->SetMargins(${4:esquerda}, ${5:topo}, ${6:direita});
+$pdf->SetFont('${7:Arial}', '${8:estilos}', ${9:12});
+$pdf->AddPage();
+
+${10:codigo}
+
+$pdf->Output('${11:arquivo}', '${12:D}');
+exit(0);]]></text>
+<tag>fpdftable</tag>
+<description>fpdf_table</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     ${1:descricao}
+//
+${2:public static }function ${3:funcao}(${4:parametros}) {
+    ${5:codigo}
+}]]></text>
+<tag>function</tag>
+<description>function</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Retorna o NOME DO ATRIBUTO (simples, implicito ou relacionamento 1:1) usado para identificar o objeto
+//
+public function get_campo_nome() {
+    return '${1:atributo}';
+}]]></text>
+<tag>getcamponome</tag>
+<description>get_campo_nome</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Retorna a definicao de um atributo simples da classe para validacao
+//
+public function get_definicao_atributo_validacao($nome_atributo) {
+// String $nome_atributo: nome do atributo desejado
+//
+    switch ($nome_atributo) {
+    case '${1:nome_atributo}':
+        $atributo = new atributo('${2:$nome_atributo}', '${3:descricao}', ${4:padrao});
+        ${5:codigo}
+        return $atributo;
+    }
+    return parent::get_definicao_atributo($nome_atributo);
+}
+]]></text>
+<tag>getdefinicaoatributovalidacao</tag>
+<description>get_definicao_atributo_validacao</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Obtem informacoes sobre um campo do formulario
+//
+public function get_info_campo($campo) {
+// String $campo: campo desejado
+//
+    switch ($campo) {
+    case '${1:campo}':
+        $atributo = new atributo('${2:campo}', '${3:descricao}', ${4:padrao});
+        ${5:definicao}
+        return $atributo;
+    }
+    return parent::get_info_campo($campo);
+}]]></text>
+<tag>getinfocampo</tag>
+<description>get_info_campo</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Obtem a lista de ${1:lista}
+//
+final public function get_vetor_${2:atributo}() {
+    return array(
+        ${3:chave1} => '${4:valor1}',
+        ${5:chave2} => '${6:valor2}',
+        ${7:chave3} => '${8:valor3}'
+    );
+}]]></text>
+<tag>getvetor</tag>
+<description>get_vetor</description>
+</snippet><snippet>
+<text><![CDATA[http::cabecalho('${1:text/css}', '${2:arquivo}', '${3:inline}', ${4:tempo_expira});]]></text>
+<tag>http</tag>
+<description>http</description>
+</snippet><snippet>
+<text><![CDATA[if (${1:condicoes}) {
+    ${2:codigo}
+}]]></text>
+<tag>if</tag>
+<description>if</description>
+</snippet><snippet>
+<text><![CDATA[if (${1:condicao}) {
+    ${2:codigo if}
+} else {
+    ${3:codigo_else}
+}]]></text>
+<tag>ife</tag>
+<description>ife</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Imprime o nome de um objeto filho (relacionamento 1:1)
+//
+public function imprimir_objeto_rel_uu($nome_atributo, $return = false, $imprimir_descricao = true, $descricao_alternativa = false) {
+// String $nome_atributo: nome do atributo referente ao relacionamento (nome do objeto)
+// Bool $return: indica se o resultado sera' retornado ou impresso
+// Bool $imprimir_descricao: indica se deve ser incluida a descricao do relacionamento
+// String $descricao_alternativa: valor da descricao alternativa a ser utilizada
+//
+    switch ($nome_atributo) {
+    case '${1:objeto}':
+        $valor = '';
+        ${2:codigo}
+        if ($return) {
+            return $valor;
+        }
+        echo $valor;
+        return;
+    }
+    return parent::imprimir_objeto_rel_uu($nome_atributo, $return, $imprimir_descricao, $descricao_alternativa);
+}]]></text>
+<tag>imprimirobjetoreluu</tag>
+<description>imprimir_objeto_rel_uu</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Imprime um vetor da entidade (relacionamento 1:N)
+//     
+public function imprimir_vetor_rel_un($nome_vetor, $return = false, $imprimir_descricao = true) {
+// String $nome_vetor: nome do vetor
+// Bool $return: retornar ou imprimir o vetor
+// Bool $imprimir_descricao: imprime a descricao para cada item do vetor
+//
+    switch ($nome_vetor) {
+    case '${1:vetor}':
+        $valor = '';
+        ${2:codigo}
+        if ($return) {
+            return $valor;
+        }
+        echo $valor;
+        return;
+    }
+    return parent::imprimir_vetor_rel_un($nome_vetor, $return, $imprimir_descricao);
+}]]></text>
+<tag>imprimirvetorrelun</tag>
+<description>imprimir_vetor_rel_un</description>
+</snippet><snippet>
+<text><![CDATA[interface ${1:interface} {
+    ${2:metodos}
+}]]></text>
+<tag>interface</tag>
+<description>interface</description>
+</snippet><snippet>
+<text><![CDATA[mensagem::aviso(${1:$avisos});]]></text>
+<tag>maviso</tag>
+<description>maviso</description>
+</snippet><snippet>
+<text><![CDATA[mensagem::erro(${1:$erros});]]></text>
+<tag>merro</tag>
+<description>merro</description>
+</snippet><snippet>
+<text><![CDATA[$padrao = array(
+    '${1:campo}' => ${2:valor}
+);
+$dados = formulario::montar_dados($padrao, $dados);]]></text>
+<tag>montardados</tag>
+<description>montar_dados</description>
+</snippet><snippet>
+<text><![CDATA[$dados_pagina->nav[] = '${1:modulo}#${2:arquivo}';]]></text>
+<tag>nav</tag>
+<description>nav</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Indica se o formulario de um registro pode ser acessado ou nao por um usuario
+//
+public function pode_acessar_formulario(&$usuario, &$motivo = '') {
+// usuario $usuario: usuario a ser testado
+// String $motivo: motivo pelo qual nao se pode acessar o registro
+//
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_${1:inserir}():
+        if (${2:condicoes}) {
+            $r = false;
+            $motivo = '${3:motivo}';
+        }
+        break;
+    }
+    return $r;
+}]]></text>
+<tag>podeacessarformulario</tag>
+<description>pode_acessar_formulario</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Indica se o registro pode ser exibido ou nao por um usuario
+//
+public function pode_exibir(&$usuario, &$motivo = '') {
+// usuario $usuario: usuario a ser testado
+// String $motivo: motivo pelo qual nao se pode exibir registro
+//
+    $r = true;
+    if (${1:condicoes}) {
+        $r = false;
+        $motivo = '${2:motivo}';
+    }
+    return $r;
+}]]></text>
+<tag>podeexibir</tag>
+<description>pode_exibir</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Indica se o registro pode ser manipulado pelo usuario
+//
+public function pode_ser_manipulado(&$usuario) {
+// usuario $usuario: usuario a ser testado
+//
+    $r = false;
+    if (${1:condicoes}) {
+        $r = true;
+    }
+    return $r;
+}]]></text>
+<tag>podesermanipulado</tag>
+<description>pode_ser_manipulado</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Operacoes realizadas apos salvar os dados no BD
+//
+public function pos_salvar() {
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_${1:inserir}():
+        ${2:codigo}
+        break;
+    }
+    return $r;
+}]]></text>
+<tag>possalvar</tag>
+<description>pos_salvar</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Operacoes realizadas antes de salvar os dados no BD
+//
+public function pre_salvar(&$salvar_campos) {
+// Array[String] $salvar_campos: vetor de campos a serem salvos
+//
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_${1:inserir}():
+        ${2:codigo}
+        break;
+    }
+    return $r;
+}]]></text>
+<tag>presalvar</tag>
+<description>pre_salvar</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     ${1:descricao}
+//
+${2:public static }function ${3:funcao}(${4:parametros}) {
+    ${5:codigo}
+}]]></text>
+<tag>procedure</tag>
+<description>procedure</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::sql_and(${1:$vt_condicoes})]]></text>
+<tag>sqland</tag>
+<description>sqland</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::between('${1:atributo}', ${2:inicio}, ${3:fim})]]></text>
+<tag>sqlbetween</tag>
+<description>sqlbetween</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::data('${1:atributo}', '${2:dd-mm-aaaa-hh-mm-ss}')]]></text>
+<tag>sqldata</tag>
+<description>sqldata</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::except('${1:atributo}', array(${2:valores}))]]></text>
+<tag>sqlexcept</tag>
+<description>sqlexcept</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::sql_in('${1:atributo}', array(${2:valores}))]]></text>
+<tag>sqlin</tag>
+<description>sqlin</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::montar('${1:atributo}', '${2:=}', ${3:valor})]]></text>
+<tag>sqlmontar</tag>
+<description>sqlmontar</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::sql_not(${1:$condicao});]]></text>
+<tag>sqlnot</tag>
+<description>sqlnot</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::sql_or(${1:$vt_condicoes})]]></text>
+<tag>sqlor</tag>
+<description>sqlor</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::vazia()]]></text>
+<tag>sqlvazia</tag>
+<description>sqlvazia</description>
+</snippet><snippet>
+<text><![CDATA[condicao_sql::montar_vetor(${1:$valores})]]></text>
+<tag>sqlvetor</tag>
+<description>sqlvetor</description>
+</snippet><snippet>
+<text><![CDATA[switch (${1:valor}) {
+case ${2:valor}:
+    ${3:codigo}
+    break;
+default:
+    ${4:codigo2}
+    break;
+}]]></text>
+<tag>switch</tag>
+<description>switch</description>
+</snippet><snippet>
+<text><![CDATA[try {
+    ${1:codigo}
+} catch (${2:Exception} $e) {
+    ${3:codigo2}
+}]]></text>
+<tag>try</tag>
+<description>try</description>
+</snippet><snippet>
+<text><![CDATA[//
+//     Realiza a validacao final dos dados antes de salva-los (util para validar atributos dependentes)
+//
+public function validacao_final(&$dados) {
+// Object $dados: dados a serem validados
+//
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_${1:inserir}():
+        ${2:codigo}
+        break;
+    }
+    return $r;
+}]]></text>
+<tag>validacaofinal</tag>
+<description>validacao_final</description>
+</snippet><snippet>
+<text><![CDATA[$vt_condicoes = array();
+$vt_condicoes[] = condicao_sql::montar('${1:atributo1}', '${2:=}', ${3:valor1});
+$vt_condicoes[] = condicao_sql::montar('${4:atributo2}', '${5:=}', ${6:valor2});
+$vt_condicoes[] = condicao_sql::montar('${7:atributo3}', '${8:=}', ${9:valor3});
+$condicoes = condicao_sql::sql_and($vt_condicoes);
+$ordem = array(
+    '${10:ordem}' => ${11:true}
+);
+$vt_${12:classe} = objeto::get_objeto('${13:classe}')->vetor_associativo(${14:chave}, ${15:valor}, $condicoes, $ordem);]]></text>
+<tag>vetorassociativo</tag>
+<description>vetor_associativo</description>
+</snippet><snippet>
+<text><![CDATA[while (${1:condicao}) {
+    ${2:codigo}
+}]]></text>
+<tag>while</tag>
+<description>while</description>
+</snippet></snippets>

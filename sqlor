@@ -1,0 +1,1 @@
+condicao_sql::sql_or({{$vt_condicoes}})

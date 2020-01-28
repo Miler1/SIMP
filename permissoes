@@ -1,0 +1,356 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Script que reinstala os arquivos e permisoes de acordo com os arquivos INI
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.ufla.br
+// Versao: 1.2.0.2
+// Data: 18/01/2010
+// Modificado: 18/05/2011
+// Copyright (C) 2010  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+$t1 = microtime(true);
+
+/// Obter argumentos
+$tipos_opcoes = array(
+    array('g:', 'grupo:'),
+    array('i', 'ignorar')
+);
+$opcoes = util_cli::get_argumentos($tipos_opcoes);
+
+
+// Obter grupo
+$cod_grupo = false;
+if (isset($opcoes['grupo'])) {
+    if (is_numeric($opcoes['grupo'])) {
+        $cod_grupo = intval($opcoes['grupo']);
+    } else {
+        if (defined($opcoes['grupo'])) {
+            $cod_grupo = constant($opcoes['grupo']);
+        } else {
+            fwrite(STDERR, 'Grupo invalido: '.$opcoes['grupo']."\n");
+            exit(1);
+        }
+    }
+
+    // Checar se existe
+    $grupo = new grupo('', $cod_grupo);
+    if (!$grupo->existe()) {
+        fwrite(STDERR, 'Grupo nao existe: '.$cod_grupo."\n");
+        $r = false;
+    }
+} else {
+    $grupos = objeto::get_objeto('grupo')->vetor_associativo('cod_grupo', 'cod_grupo', null, array('nome' => true));
+}
+
+// Determinar em qual arquivo esta cada grupo
+$permissoes_ini = array();
+foreach (glob($CFG->dirclasses.'instalacao/permissao/*.ini') as $caminho_ini) {
+    $ini = parse_ini_file($caminho_ini, true);
+    $permissoes_ini[$ini['cod_grupo']] = $caminho_ini;
+    unset($ini);
+}
+$nomes_grupos = array_map('texto::decodificar', objeto::get_objeto('grupo')->vetor_associativo());
+
+// Realizar operacoes
+objeto::set_flag_log(false);
+$r = objeto::inicio_transacao();
+
+fwrite(STDOUT, '# Atualizando arquivos:'.PHP_EOL);
+$r = realizar_operacoes_arquivos($cod_arquivos_bd) && $r;
+
+fwrite(STDOUT, PHP_EOL);
+
+fwrite(STDOUT, '# Atualizando permissões:'.PHP_EOL);
+if ($cod_grupo) {
+    if (isset($permissoes_ini[$cod_grupo])) {
+        fwrite(STDOUT, '   # '.$nomes_grupos[$cod_grupo].PHP_EOL);
+        $r = realizar_operacoes_permissoes($cod_grupo, $permissoes_ini[$cod_grupo], $cod_arquivos_bd) && $r;
+    } else {
+        fwrite(STDOUT, '[Aviso] O grupo '.$cod_grupo.' não possui arquivo de permissões'.PHP_EOL);
+    }
+} else {
+    foreach ($grupos as $cod_grupo) {
+        fwrite(STDOUT, '   # '.$nomes_grupos[$cod_grupo].PHP_EOL);
+        if (isset($permissoes_ini[$cod_grupo])) {
+            $r = realizar_operacoes_permissoes($cod_grupo, $permissoes_ini[$cod_grupo], $cod_arquivos_bd) && $r;
+        } else {
+            fwrite(STDOUT, '      [Aviso] O grupo não possui arquivo de permissões'.PHP_EOL);
+        }
+        fwrite(STDOUT, PHP_EOL);
+    }
+}
+
+if (isset($opcoes['ignorar'])) {
+    $r = objeto::fim_transacao(false) && $r;
+    if (!$r) {
+        fwrite(STDERR, "Alguns erros foram ignorados\n");
+    }
+} else {
+    $r = objeto::fim_transacao(!$r) && $r;
+    if (!$r) {
+       fwrite(STDERR, "Algum erro ocorreu e todo processo foi cancelado\n");
+        exit(1);
+    }
+}
+objeto::set_flag_log(true);
+
+fwrite(STDOUT, PHP_EOL);
+
+
+$t2 = microtime(true);
+$tempo = $t2 - $t1;
+
+fwrite(STDOUT, 'Tempo: '.sprintf('%0.3f segundos', $tempo).PHP_EOL);
+fwrite(STDOUT, 'OK'.PHP_EOL);
+exit(0);
+
+
+//
+//     Realiza as operacoes sobre arquivos
+//
+function realizar_operacoes_arquivos(&$cod_arquivos_bd) {
+// Array[String => Array[String => Int]] $cod_arquivos_bd: codigo dos arquivos no bd indexado pelo modulo e pelo nome do arquivo
+//
+    global $CFG;
+
+    $mudou = false;
+
+    $r = true;
+
+    $cod_arquivos_bd = array();
+
+    // Ler arquivos do BD
+    $condicoes = condicao_sql::vazia();
+    $campos = array('arquivo', 'modulo', 'descricao');
+    $ordem = array(
+        'modulo'  => true,
+        'arquivo' => true,
+    );
+    $arquivos_bd = objeto::get_objeto('arquivo')->consultar_varios_iterador($condicoes, $campos, $ordem);
+    $arquivos_modulos_bd = array();
+    foreach ($arquivos_bd as $arquivo_bd) {
+        if (!isset($arquivos_modulos_bd[$arquivo_bd->modulo])) {
+            $arquivos_modulos_bd[$arquivo_bd->modulo] = array();
+            $cod_arquivos_bd[$arquivo_bd->modulo] = array();
+        }
+        $arquivos_modulos_bd[$arquivo_bd->modulo][$arquivo_bd->arquivo] = $arquivo_bd;
+        $cod_arquivos_bd[$arquivo_bd->modulo][$arquivo_bd->arquivo] = $arquivo_bd->get_valor_chave();
+    }
+    unset($arquivos_bd);
+
+    // Ler arquivos do INI
+    $ini = parse_ini_file($CFG->dirclasses.'/instalacao/arquivo.ini', true);
+    foreach ($ini as $modulo_ini => $arquivos_ini) {
+        if ($modulo_ini == 'simp') {
+            $modulo_ini = '';
+        }
+        foreach ($arquivos_ini as $arquivo_ini => $descricao_ini) {
+
+            // Se ja tem no BD
+            if (isset($arquivos_modulos_bd[$modulo_ini][$arquivo_ini])) {
+                $arquivo_bd = $arquivos_modulos_bd[$modulo_ini][$arquivo_ini];
+
+                // Se mudou algum campo
+                $arquivo_bd->descricao = $descricao_ini;
+                if ($arquivo_bd->get_campos_modificados(array('descricao'))) {
+                    $mudou = true;
+                    if ($arquivo_bd->salvar()) {
+                        fwrite(STDOUT, '   - Atualizou: '.$modulo_ini.'/'.$arquivo_ini.PHP_EOL);
+                    } else {
+                        $r = false;
+                        $erros = array();
+                        $erros[] = '- Erro ao atualizar: '.$modulo_ini.'/'.$arquivo_ini.' ('.$descricao_ini.')'.PHP_EOL;
+                        $erros[] = $arquivo_bd->get_erros();
+                        util_cli::imprimir_erros($erros, false, 1);
+                    }
+                }
+
+                // Apagar do vetor para determinar quais vao sobrar
+                unset($arquivos_modulos_bd[$modulo_ini][$arquivo_ini]);
+                if (empty($arquivos_modulos_bd[$modulo_ini])) {
+                    unset($arquivos_modulos_bd[$modulo_ini]);
+                }
+
+            // Se nao tem no BD
+            } else {
+                $mudou = true;
+                $caminho_arquivo = $modulo_ini == '' ? $CFG->dirroot.$arquivo_ini : $CFG->dirmods.$modulo_ini.'/'.$arquivo_ini;
+                if (!is_file($caminho_arquivo)) {
+                    $r = false;
+                    util_cli::imprimir_erros('- Arquivo '.$modulo_ini.'/'.$arquivo_ini.' foi solicitado em arquivo.ini, mas nao existe no sistema de arquivos', false, 1);
+
+                } else {
+                    $arquivo = new arquivo();
+                    $arquivo->arquivo = $arquivo_ini;
+                    $arquivo->modulo = $modulo_ini;
+                    $arquivo->descricao = $descricao_ini;
+                    if ($arquivo->salvar()) {
+                        fwrite(STDOUT, '   - Inseriu: '.$modulo_ini.'/'.$arquivo_ini.PHP_EOL);
+                        $cod_arquivos_bd[$modulo_ini][$arquivo_ini] = $arquivo->get_valor_chave();
+                    } else {
+                        $r = false;
+                        $erros = array();
+                        $erros[] = '- Erro ao inserir: '.$modulo_ini.'/'.$arquivo_ini.' ('.$descricao_ini.')'.PHP_EOL;
+                        $erros[] = $arquivo->get_erros();
+                        util_cli::imprimir_erros($erros, false, 1);
+                    }
+                }
+            }
+        }
+    }
+
+    // Determinar arquivos do BD que sobraram no vetor
+    foreach ($arquivos_modulos_bd as $modulo_bd => $arquivos_bd) {
+        foreach ($arquivos_bd as $arquivo_bd => $reg_bd) {
+            $mudou = true;
+            $modulo = $reg_bd->modulo;
+            $arquivo = $reg_bd->arquivo;
+            if ($reg_bd->excluir()) {
+                fwrite(STDOUT, '   - Removeu: '.$modulo.'/'.$arquivo.PHP_EOL);
+                unset($cod_arquivos_bd[$modulo][$arquivo]);
+            } else {
+                $r = false;
+                $erros = array();
+                $erros[] = '- Erro ao remover: '.$modulo_ini.'/'.$arquivo_ini.' ('.$descricao_ini.')'.PHP_EOL;
+                $erros[] = $reg_bd->get_erros();
+                util_cli::imprimir_erros($erros, false, 1);
+            }
+        }
+    }
+    if (!$mudou) {
+        fwrite(STDOUT, 'Nenhuma mudança'.PHP_EOL);
+    }
+    return $r;
+}
+
+
+//
+//     Realiza as operacoes sobre as permissoes
+//
+function realizar_operacoes_permissoes($cod_grupo, $caminho_ini, $cod_arquivos_bd) {
+// Int $cod_grupo: codigo do grupo a ser verificado
+// String $caminho_ini: caminho ao arquivo ini
+// Array[String => Array[String => Int]] $cod_arquivos_bd: codigo dos arquivos do BD indexado pelo modulo e nome do arquivo
+//
+    $r = true;
+
+    $mudou = false;
+    $caminho_ini_simples = basename($caminho_ini);
+
+    // Obter permissoes do grupo no BD
+    $condicoes = condicao_sql::montar('cod_grupo', '=', $cod_grupo);
+    $campos = array(
+        'cod_permissao',
+        'arquivo:modulo',
+        'arquivo:arquivo',
+        'posicao',
+        'visivel'
+    );
+    $ordem = array(
+        'posicao' => true
+    );
+    $permissoes_bd = objeto::get_objeto('permissao')->consultar_varios_iterador($condicoes, $campos, $ordem);
+
+    $permissoes_modulos_bd = array();
+    foreach ($permissoes_bd as $permissao_bd) {
+        if (!isset($permissoes_modulos_bd[$permissao_bd->arquivo->modulo])) {
+            $permissoes_modulos_bd[$permissao_bd->arquivo->modulo] = array();
+        }
+        $permissoes_modulos_bd[$permissao_bd->arquivo->modulo][$permissao_bd->arquivo->arquivo] = $permissao_bd;
+    }
+    unset($permissoes_bd);
+
+    // Obter permissoes do grupo no INI
+    $ini = parse_ini_file($caminho_ini, true);
+    unset($ini['cod_grupo']);
+    $posicao_ini = 0;
+    foreach ($ini as $modulo_ini => $arquivos_ini) {
+        foreach ($arquivos_ini as $arquivo_ini => $visivel_ini) {
+            $posicao_ini += 1;
+
+            // Se ja tem no BD
+            if (isset($permissoes_modulos_bd[$modulo_ini][$arquivo_ini])) {
+                $permissao_bd = $permissoes_modulos_bd[$modulo_ini][$arquivo_ini];
+
+                // Se mudou algum campo
+                $permissao_bd->visivel = $visivel_ini;
+                $permissao_bd->posicao = $posicao_ini;
+                if ($permissao_bd->get_campos_modificados(array('visivel', 'posicao'))) {
+                    $mudou = true;
+                    if ($permissao_bd->salvar()) {
+                        fwrite(STDOUT, '      - Atualizou: '.$modulo_ini.'/'.$arquivo_ini.PHP_EOL);
+                    } else {
+                        $r = false;
+                        $erros = array();
+                        $erros[] = '- Erro ao atualizar: '.$modulo_ini.'/'.$arquivo_ini;
+                        $erros[] = $permissao_bd->get_erros();
+                        util_cli::imprimir_erros($erros, false, 2);
+                    }
+                }
+
+                // Apagar do vetor para determinar quais vao sobrar
+                unset($permissoes_modulos_bd[$modulo_ini][$arquivo_ini]);
+                if (empty($permissoes_modulos_bd[$modulo_ini])) {
+                    unset($permissoes_modulos_bd[$modulo_ini]);
+                }
+
+            // Se nao tem no BD
+            } else {
+                $mudou = true;
+
+                // Se nao existe o arquivo
+                if (!isset($cod_arquivos_bd[$modulo_ini][$arquivo_ini])) {
+                    $r = false;
+                    $erros = '- Foi solicitado o arquivo '.$modulo_ini.'/'.$arquivo_ini.' em "'.$caminho_ini_simples.'", mas ele não foi cadastrado no BD (não está em arquivo.ini)';
+                    util_cli::imprimir_erros($erros, false, 2);
+                } else {
+                    $permissao = new permissao();
+                    $permissao->cod_grupo = $cod_grupo;
+                    $permissao->cod_arquivo = $cod_arquivos_bd[$modulo_ini][$arquivo_ini];
+                    $permissao->visivel = $visivel_ini;
+                    $permissao->posicao = $posicao_ini;
+                    if ($permissao->salvar()) {
+                        fwrite(STDOUT, '      - Inseriu: '.$modulo_ini.'/'.$arquivo_ini.PHP_EOL);
+                    } else {
+                        $r = false;
+                        $erros = array();
+                        $erros[] = '- Erro ao inserir: '.$modulo_ini.'/'.$arquivo_ini;
+                        $erros[] = $permissao->get_erros();
+                        util_cli::imprimir_erros($erros, false, 2);
+                    }
+                }
+            }
+
+        }
+    }
+
+    // Removendo permissoes que sobraram
+    foreach ($permissoes_modulos_bd as $modulo_bd => $arquivos_bd) {
+        foreach ($arquivos_bd as $arquivo_bd => $reg_bd) {
+            $mudou = true;
+            $arquivo = $reg_bd->arquivo->arquivo;
+            $modulo = $reg_bd->arquivo->modulo;
+            if ($reg_bd->excluir()) {
+                fwrite(STDOUT, '      - Removeu: '.$modulo.'/'.$arquivo.PHP_EOL);
+            } else {
+                $r = false;
+                $erros = array();
+                $erros[] = '- Erro ao remover: '.$modulo.'/'.$arquivo;
+                $erros[] = $reg_bd->get_erros();
+                util_cli::imprimir_erros($erros, false, 2);
+            }
+        }
+    }
+    if (!$mudou) {
+        fwrite(STDOUT, '      - Nenhuma mudança'.PHP_EOL);
+    }
+    return $r;
+}

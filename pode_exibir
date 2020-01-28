@@ -1,0 +1,14 @@
+//
+//     Indica se o registro pode ser exibido ou nao por um usuario
+//
+public function pode_exibir(&$usuario, &$motivo = '') {
+// usuario $usuario: usuario a ser testado
+// String $motivo: motivo pelo qual nao se pode exibir registro
+//
+    $r = true;
+    if ({{condicoes}}) {
+        $r = false;
+        $motivo = '{{motivo}}';
+    }
+    return $r;
+}

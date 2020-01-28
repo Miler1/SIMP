@@ -1,0 +1,1 @@
+$form->campo_bool({{name}}, {{id}}, {{label}}, {{valor}});

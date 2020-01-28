@@ -1,0 +1,9 @@
+$vt_condicoes = array();
+$vt_condicoes[] = condicao_sql::montar('{{atributo1}}', '{{=}}', {{valor1}});
+$vt_condicoes[] = condicao_sql::montar('{{atributo2}}', '{{=}}', {{valor2}});
+$vt_condicoes[] = condicao_sql::montar('{{atributo3}}', '{{=}}', {{valor3}});
+$condicoes = condicao_sql::sql_and($vt_condicoes);
+$ordem = array(
+    '{{ordem}}' => {{true}}
+);
+$vt_{{classe}} = objeto::get_objeto('{{classe}}')->vetor_associativo({{chave}}, {{valor}}, $condicoes, $ordem);

@@ -1,0 +1,22 @@
+//
+//     Retorna um vetor com os dados da opcao (icone) que aparece na lista de entidades
+//
+public function dados_opcao($opcao, $modulo) {
+// String $opcao: identificador da opcao
+// String $modulo: nome do modulo
+//
+    $dados = new stdClass();
+
+    switch ($opcao) {
+    case '{{opcao}}':
+        $dados->icone     = icone::endereco('{{icone}}');
+        $dados->arquivo   = '{{arquivo}}.php';
+        $dados->modulo    = $modulo;
+        $dados->descricao = '{{descricao}}';
+        $dados->id        = '';
+        $dados->class     = '';
+        return $dados;
+    }
+
+    return parent::dados_opcao($opcao, $modulo);
+}

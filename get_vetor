@@ -1,0 +1,10 @@
+//
+//     Obtem a lista de {{lista}}
+//
+final public function get_vetor_{{atributo}}() {
+    return array(
+        {{chave1}} => '{{valor1}}',
+        {{chave2}} => '{{valor2}}',
+        {{chave3}} => '{{valor3}}'
+    );
+}

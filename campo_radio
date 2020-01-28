@@ -1,0 +1,2 @@
+$vt_{{nome}} = {{codigo}};
+$form->campo_radio({{name}}, {{id}}, $vt_{{nome}}, {{valor}}, {{label}});

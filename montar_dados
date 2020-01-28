@@ -1,0 +1,4 @@
+$padrao = array(
+    '{{campo}}' => {{valor}}
+);
+$dados = formulario::montar_dados($padrao, $dados);

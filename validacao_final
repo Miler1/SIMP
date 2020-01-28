@@ -1,0 +1,14 @@
+//
+//     Realiza a validacao final dos dados antes de salva-los (util para validar atributos dependentes)
+//
+public function validacao_final(&$dados) {
+// Object $dados: dados a serem validados
+//
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_{{inserir}}():
+        {{codigo}}
+        break;
+    }
+    return $r;
+}

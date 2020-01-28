@@ -1,0 +1,7 @@
+$vt_condicoes = array();
+$vt_condicoes[] = condicao_sql::montar('{{atributo}}', '{{=}}', {{valor}});
+$vt_condicoes[] = condicao_sql::montar('{{atributo}}', '{{=}}', {{valor}});
+$vt_condicoes[] = condicao_sql::montar('{{atributo}}', '{{=}}', {{valor}});
+$vt_condicoes[] = condicao_sql::montar('{{atributo}}', '{{=}}', {{valor}});
+$vt_condicoes[] = condicao_sql::montar('{{atributo}}', '{{=}}', {{valor}});
+$condicoes = condicao_sql::sql_{{and}}($vt_condicoes);

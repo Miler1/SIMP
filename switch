@@ -1,0 +1,8 @@
+switch ({{valor}}) {
+case {{valor}}:
+    {{codigo}}
+    break;
+default:
+    {{codigo2}}
+    break;
+}

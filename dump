@@ -1,0 +1,217 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Script que cria arquivo de backup
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.0.0.0
+// Data: 11/02/2011
+// Modificado: 11/02/2011
+// Copyright (C) 2011  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+if (!$CFG->instalacao) {
+    fwrite(STDERR, 'O sistema nao esta instalado e nao possui dados'.PHP_EOL);
+    exit(1);
+}
+
+// Obter argumentos
+$tipos_opcoes = array(
+    array('a:', 'arquivo:'),
+    array('s:', 'sgbd:'),
+    array('e:', 'classes:'),
+    array('r:', 'classes-ignoradas:'),
+    array('d::', 'drop-table::'),
+    array('c::', 'create-table::'),
+    array('i::', 'insert::'),
+    array('x::', 'comentarios::'),
+    array('l::', 'legivel::')
+);
+$padrao = array(
+    'sgbd'         => $CFG->bd_config->sgbd,
+    'drop-table'   => 's',
+    'create-table' => 's',
+    'insert'       => 's',
+    'comentarios'  => 's',
+    'legivel'      => 's'
+);
+$opcoes = util_cli::get_argumentos($tipos_opcoes, $padrao);
+
+// Validar argumentos
+$drivers = objeto_dao::get_drivers();
+if (!isset($drivers[$opcoes['sgbd']])) {
+    fwrite(STDERR, 'Driver invalido ou indisponivel: '.$opcoes['sgbd'].PHP_EOL);
+    exit(1);
+}
+
+if (!preg_match('/^[sn]$/', $opcoes['drop-table'])) {
+    fwrite(STDERR, 'A opcao "drop-table" pode valer "s" ou "n"'.PHP_EOL);
+    exit(1);
+}
+if (!preg_match('/^[sn]$/', $opcoes['create-table'])) {
+    fwrite(STDERR, 'A opcao "create-table" pode valer "s" ou "n"'.PHP_EOL);
+    exit(1);
+}
+if (!preg_match('/^[sn]$/', $opcoes['insert'])) {
+    fwrite(STDERR, 'A opcao "insert" pode valer "s" ou "n"'.PHP_EOL);
+    exit(1);
+}
+
+if (!isset($opcoes['arquivo'])) {
+    $arq = STDOUT;
+} else {
+    $arq = fopen($opcoes['arquivo'], 'w');
+    if (!$arq) {
+        fwrite(STDERR, 'Erro ao abrir arquivo "'.$opcoes['arquivo'].'" para escrita'.PHP_EOL);
+        exit(1);
+    }
+}
+
+// Criar DAO de conexao com o sistema e outro DAO para geracao das SQL de backup
+$dao = new objeto_dao();
+$dao_dump = new objeto_dao($opcoes['sgbd']);
+
+$entidades = listas::get_entidades();
+
+// Obter classes que deseja fazer o dump
+$classes = array();
+if (isset($opcoes['classes'])) {
+    foreach (explode(',', $opcoes['classes']) as $classe) {
+        $classes[$classe] = $classe;
+    }
+} else {
+    foreach ($entidades as $classe => $descricao) {
+        $classes[$classe] = $classe;
+    }
+}
+if (isset($opcoes['classes-ignoradas'])) {
+    foreach (explode(',', $opcoes['classes-ignoradas']) as $classe) {
+        unset($classes[$classe]);
+    }
+}
+
+// Modo de exibicao
+$dao_dump->set_exibicao_usuario($opcoes['legivel'] == 's');
+
+// Obter os objetos na ordem de instalacao
+$objetos = instalacao::get_objetos();
+
+// Fazer o dump
+$di = $dao_dump->get_delimitador_instrucoes();
+
+// Cabecalho
+if ($opcoes['comentarios'] == 's') {
+    $time = time();
+
+    $comentarios = array(
+        '@comentario Simp Dump',
+        '@data '.strftime('%d/%m/%Y %H:%M:%S', $time),
+        '@time '.$time,
+        '@tabelas '.count($classes),
+        '@sgbd '.$opcoes['sgbd']
+    );
+    if (extension_loaded('posix')) {
+        $comentarios[] = '@usuario '.posix_getlogin();
+    } else {
+        @ $login = `whoami`;
+        if ($login) {
+            $comentarios[] = '@usuario '.$login;
+        }
+    }
+    foreach ($comentarios as $comentario) {
+        $sql = $dao_dump->sql_comment($comentario).PHP_EOL;
+        fwrite($arq, $sql);
+    }
+    fwrite($arq, PHP_EOL);
+}
+
+// Drop table
+if ($opcoes['drop-table'] == 's') {
+    if ($opcoes['comentarios'] == 's') {
+        $sql = $dao_dump->sql_comment('DROP TABLE');
+        fwrite($arq, $sql.PHP_EOL);
+    }
+    foreach (array_reverse($objetos) as $objeto) {
+        $classe = $objeto->get_classe();
+        if (!isset($classes[$classe])) {
+            continue;
+        }
+        if ($opcoes['comentarios'] == 's') {
+            $sql = $dao_dump->sql_comment('TABELA '.$objeto->get_tabela().' / ENTIDADE '.$objeto->get_classe());
+            fwrite($arq, $sql.PHP_EOL);
+        }
+        $sql = $dao_dump->sql_drop_table($objeto).$di.PHP_EOL;
+        fwrite($arq, $sql);
+        if ($opcoes['comentarios'] == 's') {
+            fwrite($arq, PHP_EOL);
+        }
+    }
+}
+
+// Create table
+if ($opcoes['create-table'] == 's') {
+    if ($opcoes['comentarios'] == 's') {
+        $sql = $dao_dump->sql_comment('CREATE TABLE');
+        fwrite($arq, $sql.PHP_EOL);
+    }
+    foreach ($objetos as $objeto) {
+        $classe = $objeto->get_classe();
+        if (!isset($classes[$classe])) {
+            continue;
+        }
+        if ($opcoes['comentarios'] == 's') {
+            $sql = $dao_dump->sql_comment('TABELA '.$objeto->get_tabela().' / ENTIDADE '.$objeto->get_classe());
+            fwrite($arq, $sql.PHP_EOL);
+        }
+        $sql = $dao_dump->formatar_sql($dao_dump->sql_create_table($objeto)).PHP_EOL;
+        fwrite($arq, $sql);
+        if ($opcoes['comentarios'] == 's') {
+            fwrite($arq, PHP_EOL);
+        }
+    }
+}
+
+// Intert
+if ($opcoes['insert']) {
+    if ($opcoes['comentarios'] == 's') {
+        $sql = $dao_dump->sql_comment('INSERT');
+        fwrite($arq, $sql.PHP_EOL);
+    }
+    foreach ($objetos as $objeto) {
+        $classe = $objeto->get_classe();
+        if (!isset($classes[$classe])) {
+            continue;
+        }
+
+        if ($opcoes['comentarios'] == 's') {
+            $sql = $dao_dump->sql_comment('TABELA '.$objeto->get_tabela().' / ENTIDADE '.$objeto->get_classe());
+            fwrite($arq, $sql.PHP_EOL);
+        }
+
+        $chave = $objeto->get_chave();
+        $condicoes = condicao_sql::vazia();
+        $campos = true;
+        $ordem = array($chave => true);
+        $registros = $objeto->consultar_varios_iterador($condicoes, $campos, $ordem);
+        $atributos = filtro_atributo::get_atributos_classe($objeto->get_classe(), '[S] , -[PK]');
+        foreach ($registros as $registro) {
+            $dados = $registro->get_dados($atributos);
+            $sql = $dao_dump->formatar_sql($dao_dump->sql_insert($objeto, $dados)).PHP_EOL;
+            fwrite($arq, $sql);
+        }
+        if ($opcoes['comentarios'] == 's') {
+            fwrite($arq, PHP_EOL);
+        }
+    }
+    if ($opcoes['comentarios'] == 's') {
+        fwrite($arq, PHP_EOL);
+    }
+}
+
+exit(0);

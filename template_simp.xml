@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<templates><template autoinsert="true" context="php" deleted="false" description="SIMP/__get" enabled="true" name="__get"><![CDATA[//
+//     Obtem um atributo da classe
+//
+public function __get($$atributo) {
+// String $$atributo: nome do atributo a ser obtido
+//
+    switch ($$atributo) {
+    case '${atributo}':
+        ${codigo}
+    }
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/__set" enabled="true" name="__set"><![CDATA[//
+//     Define o valor de um atributo da classe
+//
+public function __set($$atributo, $$valor) {
+// String $$atributo: nome do atributo a ser definido
+// Mixed $$valor: valor do atributo
+//
+    switch ($$atributo) {
+    case '${atributo}':
+        ${codigo}
+    }
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/__toString" enabled="true" name="__toString"><![CDATA[//
+//     Define a forma como um objeto sera exibido
+//
+public function __toString() {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/ajuda" enabled="true" name="ajuda"><![CDATA[mensagem::comentario(${$CFG->site}, ${$ajuda});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_aviso" enabled="true" name="campo_aviso"><![CDATA[$$form->campo_aviso('${aviso}');]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_bool" enabled="true" name="campo_bool"><![CDATA[$$form->campo_bool(${name}, ${id}, ${label}, ${valor});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_busca" enabled="true" name="campo_busca"><![CDATA[$$form->campo_busca(${name}, ${id}, ${classe}, ${campo}, ${valor}, ${condicoes}, ${128}, ${30}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_checkbox" enabled="true" name="campo_checkbox"><![CDATA[$$vt_${nome} = ${codigo};
+$$form->campo_checkbox(${name}, ${id}, $$vt_${nome}, ${valores}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_data" enabled="true" name="campo_data"><![CDATA[$$form->campo_data('${prefixo}', ${dia}, ${mes}, ${ano}, ${label}, ${anos_passado}, ${anos_futuro});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_file" enabled="true" name="campo_file"><![CDATA[$$form->campo_file(${name}, ${id}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_formulario" enabled="true" name="campo_formulario"><![CDATA[//
+//     Indica como um campo deve ser apresentado no formulario
+//
+public function campo_formulario(&$$form, $$campo, $$valor) {
+// formulario $$form: formulario que deve receber o campo
+// String $$campo: nome do campo a ser inserido
+// Mixed $$valor: valor padrao do campo
+//
+    if ($$this->possui_atributo($$campo)) {
+        $$atributo = $$this->get_definicao_atributo($$campo);
+    }
+    switch ($$campo) {
+    case '${nome_campo}':
+        $$form->campo_${text}();
+        return true;
+    }
+    return parent::campo_formulario($$form, $$campo, $$valor);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_hidden" enabled="true" name="campo_hidden"><![CDATA[$$form->campo_hidden(${name}, ${valor});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_hierarquico" enabled="true" name="campo_hierarquico"><![CDATA[$$form->campo_hierarquico(${name}, ${id}, ${link}, ${valor}, ${128}, ${30}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_hora" enabled="true" name="campo_hora"><![CDATA[$$form->campo_hora('${prefixo}', ${hora}, ${minuto}, ${segundo}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_image" enabled="true" name="campo_image"><![CDATA[$$form->campo_image(${name}, ${id}, ${src}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_informacao" enabled="true" name="campo_informacao"><![CDATA[$$form->campo_informacao('${informacao}');]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_password" enabled="true" name="campo_password"><![CDATA[$$form->campo_password(${name}, ${id}, ${128}, ${30}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_radio" enabled="true" name="campo_radio"><![CDATA[$$vt_${nome} = ${codigo};
+$$form->campo_radio(${name}, ${id}, $$vt_${nome}, ${valor}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_relacionamento" enabled="true" name="campo_relacionamento"><![CDATA[$$form->campo_relacionamento(${name}, ${id}, ${classe}, ${campo_preencher}, ${campo_exibir}, ${condicoes}, ${valor}, ${128}, ${30}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_select" enabled="true" name="campo_select"><![CDATA[$$vt_${nome} = ${codigo};
+$$form->campo_select(${name}, ${id}, $$vt_${nome}, ${valor}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_submit" enabled="true" name="campo_submit"><![CDATA[$$form->campo_submit('${enviar}', '${enviar}', '${Enviar}');]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_telefone" enabled="true" name="campo_telefone"><![CDATA[$$form->campo_telefone('${prefixo}', ${ddd}, ${numero}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_telefone_comercial" enabled="true" name="campo_telefone_comercial"><![CDATA[$$form->campo_telefone_comercial('${prefixo}', ${ddd}, ${numero}, ${ramal}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_text" enabled="true" name="campo_text"><![CDATA[$$form->campo_text(${name}, ${id}, ${valor}, ${128}, ${30}, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/campo_textarea" enabled="true" name="campo_textarea"><![CDATA[$$form->campo_textarea(${name}, ${id}, ${$valor}, 30, 5, ${label});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/class" enabled="true" name="class"><![CDATA[class ${classe} {
+    
+}//class]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/comentario" enabled="true" name="comentario"><![CDATA[<?php
+//
+// SIMP
+// Descricao: ${descricao}
+// Autor: ${autor}
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: ${email}@tecnolivre.com.br
+// Versao: 1.0.0.0
+// Data: ${data}
+// Modificado: ${data}
+// Copyright (C) ${ano}  ${autor}
+// License: LICENSE.TXT
+//
+]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/condicoes" enabled="true" name="condicoes"><![CDATA[$$vt_condicoes = array();
+$$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+$$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+$$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+$$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+$$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+$$condicoes = condicao_sql::sql_${and}($$vt_condicoes);]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/consultar_varios" enabled="true" name="consultar_varios"><![CDATA[$$vt_condicoes = array();
+$$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+$$vt_condicoes[] = condicao_sql::montar('${atributo2}', '${=}', ${valor2});
+$$vt_condicoes[] = condicao_sql::montar('${atributo3}', '${=}', ${valor3});
+$$condicoes = condicao_sql::sql_and($$vt_condicoes);
+$$campos = array(
+    '${campo}'
+);
+$$ordem = array(
+    '${ordem}' => ${true}
+);
+$$vt_${classe} = objeto::get_objeto('${classe}')->consultar_varios($$condicoes, $$campos, $$ordem);]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/converter_componente" enabled="true" name="converter_componente"><![CDATA[// 
+//     Converte as componentes de um atributo no respectivo valor do atributo final
+//
+protected function converter_componente($$campo, $$valor, $$valores) {
+// String $$campo: nome do campo
+// Mixed $$valor: valor do campo
+// Object $$valores: valores a serem convertidos
+//
+    switch ($$campo) {
+    case ${valor}:
+        ${codigo}
+    }
+    return parent::converter_componente($$campo, $$valor, $$valores);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/cv" enabled="true" name="cv"><![CDATA[$$vt_condicoes = array();
+$$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+$$vt_condicoes[] = condicao_sql::montar('${atributo2}', '${=}', ${valor2});
+$$vt_condicoes[] = condicao_sql::montar('${atributo3}', '${=}', ${valor3});
+$$condicoes = condicao_sql::sql_and($$vt_condicoes);
+$$campos = array(
+    '${campo}'
+);
+$$ordem = array(
+    '${ordem}' => ${true}
+);
+$$vt_${classe} = objeto::get_objeto('${classe}')->consultar_varios($$condicoes, $$campos, $$ordem);]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/dados_form" enabled="true" name="dados_form"><![CDATA[/// Dados do Formulario
+$$dados_form = new stdClass();
+$$dados_form->${atributo} = ${valor}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/dados_gerais" enabled="true" name="dados_gerais"><![CDATA[/// Dados Gerais
+$$dados_gerais = new stdClass();
+$$dados_gerais->${atributo} = ${valor};]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/dados_lista" enabled="true" name="dados_lista"><![CDATA[/// Dados da Lista
+$$dados_lista = new stdClass();
+$$dados_lista->opcoes = array('exibir', 'alterar', 'excluir');
+$$dados_lista->campos = array(${campos});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/dados_opcao" enabled="true" name="dados_opcao"><![CDATA[//
+//     Retorna um vetor com os dados da opcao (icone) que aparece na lista de entidades
+//
+public function dados_opcao($$opcao, $$modulo) {
+// String $$opcao: identificador da opcao
+// String $$modulo: nome do modulo
+//
+    $$dados = new stdClass();
+
+    switch ($$opcao) {
+    case '${opcao}':
+        $$dados->icone     = icone::endereco('${icone}');
+        $$dados->arquivo   = '${arquivo}.php';
+        $$dados->modulo    = $$modulo;
+        $$dados->descricao = '${descricao}';
+        $$dados->id        = '';
+        $$dados->class     = '';
+        return $$dados;
+    }
+
+    return parent::dados_opcao($$opcao, $$modulo);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/dados_pagina" enabled="true" name="dados_pagina"><![CDATA[/// Dados da Pagina
+$$dados_pagina = new stdClass();
+$$dados_pagina->titulo = '${titulo}';
+]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/define" enabled="true" name="define"><![CDATA[define('${nome}', ${valor});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/definir_atributos" enabled="true" name="definir_atributos"><![CDATA[//
+//     Cria os atributos da classe
+//
+protected function definir_atributos() {
+
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/definir_entidade" enabled="true" name="definir_entidade"><![CDATA[//
+//     Cria a definicao de entidade
+//
+protected function definir_entidade() {
+    $$this->criar_entidade(
+        /* Nome Entidade   */ '${singular}',
+        /* Entidade Plural */ '${plural}',
+        /* Genero          */ '${M}',
+        /* Classe          */ '${classe}',
+        /* Tabela          */ '${tabela}',
+        /* Desc. Tabela    */ 'Tabela de ${descricao}');
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/do" enabled="true" name="do"><![CDATA[do {
+    ${codigo}
+} while (${condicao});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/dump" enabled="true" name="dump"><![CDATA[util::dump(${variavel});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/else" enabled="true" name="else"><![CDATA[else {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/elseif" enabled="true" name="elseif"><![CDATA[elseif (${condicao}) {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/exibir_atributo" enabled="true" name="exibir_atributo"><![CDATA[//
+//     Define a forma como um atributo simples e' exibido
+//
+public function exibir_atributo($$nome_atributo) {
+// String $$nome_atributo: nome do atributo a ser exibido
+//
+    switch ($$nome_atributo) {
+    case '${atributo}':
+        $$valor = ${codigo}
+        return $$valor;
+    }
+    return parent::exibir_atributo($$nome_atributo);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/exibir_atributo_implicito" enabled="true" name="exibir_atributo_implicito"><![CDATA[//
+//     Define a forma como um atributo implicito e' exibido
+//
+public function exibir_atributo_implicito($$nome_atributo) {
+// String $$nome_atributo: nome do atributo implicito a ser exibido
+//
+    switch ($$nome_atributo) {
+    case '${atributo}':
+        $$valor = ${codigo}
+        return $$valor;
+    }
+    return parent::exibir_atributo_implicito($$nome_atributo);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/filtro" enabled="true" name="filtro"><![CDATA[//
+//     Imprime um formulario de filtro
+//
+function imprimir_formulario($$dados) {
+// stdClass $$dados: dados submetidos
+//
+    global $$CFG;
+    $$action = $$CFG->site;
+    link::normalizar($$action, true);
+
+    $$padrao = array(
+        '${campo}' => ${valor}
+    );
+    $$dados = formulario::montar_dados($$padrao, $$dados);
+
+    $$form = new formulario($$action, '${id}');
+    $$form->titulo_formulario('Formul&aacute;rio de Filtro');
+    $$form->campo_${campo}(${parametros});
+    $$form->campo_submit('enviar', 'enviar', 'Buscar');
+    $$form->imprimir();
+}
+
+
+//
+//     Monta as condicoes de filtragem
+//
+function montar_condicoes($$dados, &$$erros) {
+// stdClass $$dados: dados submetidos
+// Array[String] $$erros: erros ocorridos
+//
+    $$vt_condicoes = array();
+
+    if ($$dados->${campo}) {
+        $$vt_condicoes[] = condicao_sql::montar('${atributo}', '${=}', ${valor});
+    }
+
+    $$condicoes = condicao_sql::sql_and($$vt_condicoes);
+
+    return $$condicoes;
+}
+]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/for" enabled="true" name="for"><![CDATA[for (${atribuicao}; ${condicao}; ${incremento}) {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/foreach" enabled="true" name="foreach"><![CDATA[foreach (${variavel} as ${chave} => ${valor}) {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/formulario" enabled="true" name="formulario"><![CDATA[$$form = new formulario(${$action}, '${id}');
+$$form->campo_${tipo}(${parametros});
+$$form->imprimir();]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/fpdf_table" enabled="true" name="fpdf_table"><![CDATA[$$pdf = new fpdf_table('${P}', '${mm}', '${A4}');
+$$pdf->SetMargins(${esquerda}, ${topo}, ${direita});
+$$pdf->SetFont('${Arial}', '${estilos}', ${12});
+$$pdf->AddPage();
+
+${codigo}
+
+$$pdf->Output('${arquivo}', '${D}');
+exit(0);]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/function" enabled="true" name="function"><![CDATA[//
+//     ${descricao}
+//
+${public static }function ${funcao}(${parametros}) {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/get_campo_nome" enabled="true" name="get_campo_nome"><![CDATA[//
+//     Retorna o NOME DO ATRIBUTO (simples, implicito ou relacionamento 1:1) usado para identificar o objeto
+//
+public function get_campo_nome() {
+    return '${atributo}';
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/get_definicao_atributo_validacao" enabled="true" name="get_definicao_atributo_validacao"><![CDATA[//
+//     Retorna a definicao de um atributo simples da classe para validacao
+//
+public function get_definicao_atributo_validacao($$nome_atributo) {
+// String $$nome_atributo: nome do atributo desejado
+//
+    switch ($$nome_atributo) {
+    case '${nome_atributo}':
+        $$atributo = new atributo('${$nome_atributo}', '${descricao}', ${padrao});
+        ${codigo}
+        return $$atributo;
+    }
+    return parent::get_definicao_atributo($$nome_atributo);
+}
+]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/get_info_campo" enabled="true" name="get_info_campo"><![CDATA[//
+//     Obtem informacoes sobre um campo do formulario
+//
+public function get_info_campo($$campo) {
+// String $$campo: campo desejado
+//
+    switch ($$campo) {
+    case '${campo}':
+        $$atributo = new atributo('${campo}', '${descricao}', ${padrao});
+        ${definicao}
+        return $$atributo;
+    }
+    return parent::get_info_campo($$campo);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/get_vetor" enabled="true" name="get_vetor"><![CDATA[//
+//     Obtem a lista de ${lista}
+//
+final public function get_vetor_${atributo}() {
+    return array(
+        ${chave1} => '${valor1}',
+        ${chave2} => '${valor2}',
+        ${chave3} => '${valor3}'
+    );
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/http" enabled="true" name="http"><![CDATA[http::cabecalho('${text/css}', '${arquivo}', '${inline}', ${tempo_expira});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/if" enabled="true" name="if"><![CDATA[if (${condicoes}) {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/ife" enabled="true" name="ife"><![CDATA[if (${condicao}) {
+    ${codigo if}
+} else {
+    ${codigo_else}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/imprimir_objeto_rel_uu" enabled="true" name="imprimir_objeto_rel_uu"><![CDATA[//
+//     Imprime o nome de um objeto filho (relacionamento 1:1)
+//
+public function imprimir_objeto_rel_uu($$nome_atributo, $$return = false, $$imprimir_descricao = true, $$descricao_alternativa = false) {
+// String $$nome_atributo: nome do atributo referente ao relacionamento (nome do objeto)
+// Bool $$return: indica se o resultado sera' retornado ou impresso
+// Bool $$imprimir_descricao: indica se deve ser incluida a descricao do relacionamento
+// String $$descricao_alternativa: valor da descricao alternativa a ser utilizada
+//
+    switch ($$nome_atributo) {
+    case '${objeto}':
+        $$valor = '';
+        ${codigo}
+        if ($$return) {
+            return $$valor;
+        }
+        echo $$valor;
+        return;
+    }
+    return parent::imprimir_objeto_rel_uu($$nome_atributo, $$return, $$imprimir_descricao, $$descricao_alternativa);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/imprimir_vetor_rel_un" enabled="true" name="imprimir_vetor_rel_un"><![CDATA[//
+//     Imprime um vetor da entidade (relacionamento 1:N)
+//     
+public function imprimir_vetor_rel_un($$nome_vetor, $$return = false, $$imprimir_descricao = true) {
+// String $$nome_vetor: nome do vetor
+// Bool $$return: retornar ou imprimir o vetor
+// Bool $$imprimir_descricao: imprime a descricao para cada item do vetor
+//
+    switch ($$nome_vetor) {
+    case '${vetor}':
+        $$valor = '';
+        ${codigo}
+        if ($$return) {
+            return $$valor;
+        }
+        echo $$valor;
+        return;
+    }
+    return parent::imprimir_vetor_rel_un($$nome_vetor, $$return, $$imprimir_descricao);
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/interface" enabled="true" name="interface"><![CDATA[interface ${interface} {
+    ${metodos}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/maviso" enabled="true" name="maviso"><![CDATA[mensagem::aviso(${$avisos});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/merro" enabled="true" name="merro"><![CDATA[mensagem::erro(${$erros});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/montar_dados" enabled="true" name="montar_dados"><![CDATA[$$padrao = array(
+    '${campo}' => ${valor}
+);
+$$dados = formulario::montar_dados($$padrao, $$dados);]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/nav" enabled="true" name="nav"><![CDATA[$$dados_pagina->nav[] = '${modulo}#${arquivo}';]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/pode_acessar_formulario" enabled="true" name="pode_acessar_formulario"><![CDATA[//
+//     Indica se o formulario de um registro pode ser acessado ou nao por um usuario
+//
+public function pode_acessar_formulario(&$$usuario, &$$motivo = '') {
+// usuario $$usuario: usuario a ser testado
+// String $$motivo: motivo pelo qual nao se pode acessar o registro
+//
+    $$r = true;
+    switch ($$this->id_form) {
+    case $$this->id_formulario_${inserir}():
+        if (${condicoes}) {
+            $$r = false;
+            $$motivo = '${motivo}';
+        }
+        break;
+    }
+    return $$r;
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/pode_exibir" enabled="true" name="pode_exibir"><![CDATA[//
+//     Indica se o registro pode ser exibido ou nao por um usuario
+//
+public function pode_exibir(&$$usuario, &$$motivo = '') {
+// usuario $$usuario: usuario a ser testado
+// String $$motivo: motivo pelo qual nao se pode exibir registro
+//
+    $$r = true;
+    if (${condicoes}) {
+        $$r = false;
+        $$motivo = '${motivo}';
+    }
+    return $$r;
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/pode_ser_manipulado" enabled="true" name="pode_ser_manipulado"><![CDATA[//
+//     Indica se o registro pode ser manipulado pelo usuario
+//
+public function pode_ser_manipulado(&$$usuario) {
+// usuario $$usuario: usuario a ser testado
+//
+    $$r = false;
+    if (${condicoes}) {
+        $$r = true;
+    }
+    return $$r;
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/pos_salvar" enabled="true" name="pos_salvar"><![CDATA[//
+//     Operacoes realizadas apos salvar os dados no BD
+//
+public function pos_salvar() {
+    $$r = true;
+    switch ($$this->id_form) {
+    case $$this->id_formulario_${inserir}():
+        ${codigo}
+        break;
+    }
+    return $$r;
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/pre_salvar" enabled="true" name="pre_salvar"><![CDATA[//
+//     Operacoes realizadas antes de salvar os dados no BD
+//
+public function pre_salvar(&$$salvar_campos) {
+// Array[String] $$salvar_campos: vetor de campos a serem salvos
+//
+    $$r = true;
+    switch ($$this->id_form) {
+    case $$this->id_formulario_${inserir}():
+        ${codigo}
+        break;
+    }
+    return $$r;
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/procedure" enabled="true" name="procedure"><![CDATA[//
+//     ${descricao}
+//
+${public static }function ${funcao}(${parametros}) {
+    ${codigo}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqland" enabled="true" name="sqland"><![CDATA[condicao_sql::sql_and(${$vt_condicoes})]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlbetween" enabled="true" name="sqlbetween"><![CDATA[condicao_sql::between('${atributo}', ${inicio}, ${fim})]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqldata" enabled="true" name="sqldata"><![CDATA[condicao_sql::data('${atributo}', '${dd-mm-aaaa-hh-mm-ss}')]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlexcept" enabled="true" name="sqlexcept"><![CDATA[condicao_sql::except('${atributo}', array(${valores}))]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlin" enabled="true" name="sqlin"><![CDATA[condicao_sql::sql_in('${atributo}', array(${valores}))]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlmontar" enabled="true" name="sqlmontar"><![CDATA[condicao_sql::montar('${atributo}', '${=}', ${valor})]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlnot" enabled="true" name="sqlnot"><![CDATA[condicao_sql::sql_not(${$condicao});]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlor" enabled="true" name="sqlor"><![CDATA[condicao_sql::sql_or(${$vt_condicoes})]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlvazia" enabled="true" name="sqlvazia"><![CDATA[condicao_sql::vazia()]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/sqlvetor" enabled="true" name="sqlvetor"><![CDATA[condicao_sql::montar_vetor(${$valores})]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/switch" enabled="true" name="switch"><![CDATA[switch (${valor}) {
+case ${valor}:
+    ${codigo}
+    break;
+default:
+    ${codigo2}
+    break;
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/try" enabled="true" name="try"><![CDATA[try {
+    ${codigo}
+} catch (${Exception} $$e) {
+    ${codigo2}
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/validacao_final" enabled="true" name="validacao_final"><![CDATA[//
+//     Realiza a validacao final dos dados antes de salva-los (util para validar atributos dependentes)
+//
+public function validacao_final(&$$dados) {
+// Object $$dados: dados a serem validados
+//
+    $$r = true;
+    switch ($$this->id_form) {
+    case $$this->id_formulario_${inserir}():
+        ${codigo}
+        break;
+    }
+    return $$r;
+}]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/vetor_associativo" enabled="true" name="vetor_associativo"><![CDATA[$$vt_condicoes = array();
+$$vt_condicoes[] = condicao_sql::montar('${atributo1}', '${=}', ${valor1});
+$$vt_condicoes[] = condicao_sql::montar('${atributo2}', '${=}', ${valor2});
+$$vt_condicoes[] = condicao_sql::montar('${atributo3}', '${=}', ${valor3});
+$$condicoes = condicao_sql::sql_and($$vt_condicoes);
+$$ordem = array(
+    '${ordem}' => ${true}
+);
+$$vt_${classe} = objeto::get_objeto('${classe}')->vetor_associativo(${chave}, ${valor}, $$condicoes, $$ordem);]]></template><template autoinsert="true" context="php" deleted="false" description="SIMP/while" enabled="true" name="while"><![CDATA[while (${condicao}) {
+    ${codigo}
+}]]></template></templates>

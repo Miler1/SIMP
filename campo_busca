@@ -1,0 +1,1 @@
+$form->campo_busca({{name}}, {{id}}, {{classe}}, {{campo}}, {{valor}}, {{condicoes}}, {{128}}, {{30}}, {{label}});

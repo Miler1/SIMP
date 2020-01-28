@@ -1,0 +1,6 @@
+* Especificar o momento da realização das validações: antes ou depois de aplicar o filtro.
+* Criar notação usando o símbolo "^" para obter objetos pai em condições.
+* Checar viabilidade de usar "prepared statements" para SQL.
+* Utilizar o recurso Late Static Bindings do PHP 5.3 para mudar os métodos que deveriam ser estáticos (principalmente na classe objeto).
+* Criar classe objeto_grafico, para geracao de graficos genericos.
+* Atualizar documentação.

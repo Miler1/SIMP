@@ -1,0 +1,4 @@
+/// Dados da Lista
+$dados_lista = new stdClass();
+$dados_lista->opcoes = array('exibir', 'alterar', 'excluir');
+$dados_lista->campos = array({{campos}});

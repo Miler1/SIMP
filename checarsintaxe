@@ -1,0 +1,128 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: Avalia a sintaxe de um arquivo PHP ou do sistema inteiro
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.0.0.0
+// Data: 14/06/2011
+// Modificado: 14/06/2011
+// Copyright (C) 2011  Rubens Takiguti Ribeiro
+// License: LICENSE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+/// Obter argumentos
+$tipos_opcoes = array(
+    array('a:', 'arquivo:'),
+    array('d:', 'diretorio:'),
+    array('s', 'sistema'),
+    array('v', 'verbose')
+);
+$opcoes = util_cli::get_argumentos($tipos_opcoes);
+
+// Verificar um arquivo
+if (isset($opcoes['arquivo'])) {
+    $r = verificar_arquivo($opcoes['arquivo'], isset($opcoes['verbose']));
+
+// Verificar um diretorio
+} elseif (isset($opcoes['diretorio'])) {
+    $r = verificar_diretorio($opcoes['diretorio'], isset($opcoes['verbose']));
+
+// Verificar todo sistema
+} elseif (isset($opcoes['sistema'])) {
+    $r = verificar_diretorio($CFG->dirroot, isset($opcoes['verbose']));
+
+// Faltou parametro
+} else {
+    fwrite(STDERR, 'Faltou informar o parametro'.PHP_EOL);
+    $r = 1;
+}
+
+if ($r == 0) {
+    fwrite(STDOUT, 'OK'.PHP_EOL);
+} else {
+    fwrite(STDERR, 'Erro'.PHP_EOL);
+}
+exit($r);
+
+
+/// Funcoes
+
+
+//
+//     Verifica sintaxe em todos arquivos PHP do diretorio
+//
+function verificar_diretorio($diretorio, $verbose) {
+// String $diretorio: diretorio a ser verificado
+// Bool $verbose: exibe diretorio
+//
+    $r = 0;
+    $dir = opendir($diretorio);
+    if (!$dir) {
+        fwrite(STDERR, 'Erro ao abrir diretorio: '.$diretorio.PHP_EOL);
+        return 1;
+    }
+
+    if ($verbose) {
+        fwrite(STDOUT, $diretorio.PHP_EOL);
+    }
+
+    $diretorios = array();
+    while (($item = readdir($dir)) !== false) {
+        if ($item == '.' || $item == '..' || $item == '.svn') {
+            continue;
+        }
+        $item_completo = realpath($diretorio.'/'.$item);
+        if (is_dir($item_completo)) {
+            if (is_readable($item_completo)) {
+                $diretorios[] = $item_completo;
+            }
+        } elseif (preg_match('/\.php$/', $item)) {
+            $r2 = verificar_arquivo($item_completo, $verbose);
+            if ($r2 != 0) {
+                $r = 1;
+            }
+        }
+    }
+    closedir($dir);
+
+    foreach ($diretorios as $d) {
+        $r2 = verificar_diretorio($d, $verbose);
+        if ($r2 != 0) {
+            $r = 1;
+        }
+    }
+    return $r;
+}
+
+
+//
+//     Verifica a sintaxe de um arquivo PHP
+//
+function verificar_arquivo($arquivo, $verbose) {
+// String $arquivo: arquivo a ser verificado
+// Bool $verbose: exibe diretorio
+//
+    if ($verbose) {
+        fwrite(STDOUT, '- '.$arquivo.': ');
+        if (util::erros_sintaxe($arquivo, $erros)) {
+            fwrite(STDERR, 'Erro'.PHP_EOL);
+            util_cli::imprimir_erros($erros, 1);
+            return 1;
+        } else {
+            fwrite(STDOUT, 'OK'.PHP_EOL);
+        }
+    } else {
+        if (util::erros_sintaxe($arquivo, $erros)) {
+            fwrite(STDERR, $arquivo.': Erro'.PHP_EOL);
+            util_cli::imprimir_erros($erros, 1);
+            return 1;
+        }
+    }
+    return 0;
+}

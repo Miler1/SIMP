@@ -1,0 +1,1 @@
+mensagem::comentario({{$CFG->site}}, {{$ajuda}});

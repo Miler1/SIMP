@@ -1,0 +1,12 @@
+//
+//     Operacoes realizadas apos salvar os dados no BD
+//
+public function pos_salvar() {
+    $r = true;
+    switch ($this->id_form) {
+    case $this->id_formulario_{{inserir}}():
+        {{codigo}}
+        break;
+    }
+    return $r;
+}

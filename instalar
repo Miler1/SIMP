@@ -1,0 +1,232 @@
+#!/usr/bin/env bash
+# SIMP
+# Descricao: Instalador do script principal (que executa sub-comando) e os manuais
+# Autor: Rubens Takiguti Ribeiro
+# Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+# E-mail: rubens@tecnolivre.com.br
+# Versao: 1.0.0.6
+# Data: 26/10/2010
+# Modificado: 14/05/2011
+# License: LICENSE.TXT
+# Copyright (C) 2010  Rubens Takiguti Ribeiro
+#
+
+##########################################################
+#                          FUNCOES                       #
+##########################################################
+
+#
+#     Exibe a ajuda
+#
+function mostrar_ajuda {
+    declare readonly dir_corrente="$1"
+    if [ -f "${dir_corrente}/bin/config" ]
+    then
+        readonly versao=$(${dir_corrente}/bin/config --versao)
+    else
+        readonly versao='?'
+    fi
+    cat <<EOF
+Simp v.${versao}
+Copyright 2007-2010 Rubens Takiguti Ribeiro
+This software comes with ABSOLUTELY NO WARRANTY. This is free software,
+and you are welcome to modify and redistribute it under the GPL license
+Sinopse: \$ instalar [OPCOES]
+ -h         Mostra esta mensagem de ajuda
+ -b LOCAL   Informa o local onde deve ser instalado o script principal.
+            Por padrao: /usr/bin/
+ -m LOCAL   Informa o local onde devem ser instalados os manuais.
+            Por padrao: /usr/share/man/
+EOF
+    return 0
+}
+
+
+#
+#     Instala o ambiente
+#
+function instalar_ambiente {
+    declare readonly dir_corrente="$1"
+    declare readonly dir_bin_destino="$2"
+    declare readonly dir_man_destino="$3"
+
+    # Verificar diretorio de destino do script executavel
+    if [ ! -w  "$dir_bin_destino" ]
+    then
+        echo "Voce nao tem permissao para criar arquivos em ${dir_bin_destino}" 1>&2
+        exit 1
+    fi
+
+    # Verificar diretorio de destino dos manuais
+    if [ ! -w  "$dir_man_destino" ]
+    then
+        echo "Voce nao tem permissao para criar arquivos em ${dir_man_destino}" 1>&2
+        exit 1
+    fi
+
+    # Buscar bin do Simp
+    dir_bin="${dir_corrente}/bin"
+    if [ ! -d "$dir_bin" ]
+    then
+        echo -n "Onde esta o diretorio 'bin' com os comandos do Simp? "
+        read dir_bin
+        dir_bin=$(readlink -f "${dir_bin}")
+        if [ ! -d "$dir_bin" ]
+        then
+            echo "Diretorio invalido" 1>&2
+            exit 1
+        fi
+    fi
+
+    # Buscar man do Simp
+    dir_man="${dir_corrente}/man"
+    if [ ! -d "$dir_man" ]
+    then
+        echo -n "Onde esta o diretorio 'man' com os manuais do Simp? "
+        read dir_man
+        dir_man=$(readlink -f "${dir_man}")
+        if [ ! -d "$dir_man" ]
+        then
+            echo "Diretorio invalido" 1>&2
+            exit 1
+        fi
+    fi
+
+    # Informar nome do comando desejado
+    echo -n "Informe o nome desejado para o comando principal [simp]: "
+    read nome_comando
+    if [ ! "$nome_comando" ]
+    then
+        nome_comando='simp'
+    fi
+
+    comando_destino=$(readlink -f "${dir_bin_destino}/${nome_comando}")
+    if [ -f "$comando_destino" ]
+    then
+        echo "Ja existe o arquivo ${comando_destino}" 1>&2
+        exit 1
+    fi
+
+    teste_comando=`type -P "$nome_comando"`
+    if (( "${#teste_comando}" > 0 ))
+    then
+        echo "Ja existe o comando ${nome_comando} em ${teste_comando}" 1>&2
+        exit 1
+    fi
+
+    # Instalar script principal
+    echo "Instalando script principal em '${comando_destino}'..."
+    instalar_script_principal "$dir_bin" "$comando_destino" "$nome_comando"
+    case $? in
+    0)
+        echo "Sucesso!"
+        ;;
+    1)
+        echo "Erro ao criar o script principal em ${comando_destino}" 1>&2
+        exit 1
+        ;;
+    *)
+        echo "Erro desconhecido" 1>&2
+        exit 1
+        ;;
+    esac
+
+    # Instalar manuais
+    echo "Instalando manuais em '${dir_man_destino}'..."
+    instalar_manuais "$dir_man" "$dir_man_destino"
+    case $? in
+    0)
+        echo "Sucesso!"
+        ;;
+    1)
+        echo "Erro ao encontrar comando cp" 1>&2
+        exit 1
+        ;;
+    2)
+        echo "Erro ao copiar manuais para ${dir_man_destino}" 1>&2
+        exit 1
+        ;;
+    *)
+        echo "Erro desconhecido" 1>&2
+        exit 1
+        ;;
+    esac
+    return 0
+}
+
+
+#
+#     Cria o script principal e salva em um lugar
+#
+function instalar_script_principal {
+    declare readonly dir_bin="$1"
+    declare readonly destino="$2"
+    declare readonly nome_comando="$3"
+    
+    cmd_php=`type -P php`
+    $cmd_php -r "echo str_replace('###dir###', '$dir_bin', file_get_contents(dirname(__FILE__).'/extras/simp.template'));" > "$destino"
+    
+    # Instalar autocomplete
+    if [ -d "/etc/bash_completion.d" ]
+    then
+        $cmd_php -r "echo str_replace('###simp###', '$nome_comando', file_get_contents(dirname(__FILE__).'/extras/autocomplete.template'));" > "/etc/bash_completion.d/${nome_comando}"
+        chmod 555 "/etc/bash_completion.d/${nome_comando}" &> /dev/null
+    fi
+
+    if [ -f "$destino" ]
+    then
+        chmod 555 "${comando_destino}" &> /dev/null
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+#
+#     Instala os manuais
+#
+function instalar_manuais {
+    declare readonly dir_man="$1"
+    declare readonly dir_man_destino="$2"
+
+    readonly cmd_cp=$(type -P cp) || return 1
+    "$cmd_cp" -rf "${dir_man}"/* "${dir_man_destino}/" || return 2
+    return 0
+}
+
+
+##########################################################
+#                         EXECUCAO                       #
+##########################################################
+
+# Validar php
+type -P php &> /dev/null || (echo "Nao foi encontrado o php-cli" >&2 && exit 1)
+
+
+# Obter argumentos
+dir_corrente=$(readlink -f "$(dirname "$0")")
+dir_bin_destino="/usr/bin/"
+dir_man_destino="/usr/share/man/"
+while getopts "hb:m:" argumento
+do
+    case "$argumento" in
+    b)
+        dir_bin_destino="$OPTARG"
+        ;;
+    m)
+        dir_man_destino="$OPTARG"
+        ;;
+    h)
+        mostrar_ajuda "$dir_corrente"
+        exit 0
+        ;;
+    *)
+        echo "Argumento ignorado: ${argumento}" >&2
+        ;;
+    esac
+done
+
+# Instalar o ambiente
+instalar_ambiente "$dir_corrente" "$dir_bin_destino" "$dir_man_destino"
+exit $?

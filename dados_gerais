@@ -1,0 +1,3 @@
+/// Dados Gerais
+$dados_gerais = new stdClass();
+$dados_gerais->{{atributo}} = {{valor}};

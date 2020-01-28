@@ -1,0 +1,40 @@
+#!/usr/bin/env php
+<?php
+//
+// SIMP
+// Descricao: script que retorna a ordem em que as tabelas devem ser instaladas
+// Autor: Rubens Takiguti Ribeiro
+// Orgao: Tecnolivre - Cooperativa de Tecnologia e Solucoes Livres
+// E-mail: rubens@tecnolivre.com.br
+// Versao: 1.1.0.2
+// Data: 16/08/2010
+// Modificado: 11/04/2011
+// Utilizacao: $ simp ordementidades [-r]
+// Copyright (C) 2010  Rubens Takiguti Ribeiro
+// Licenca: LICENCE.TXT
+//
+$simp = getenv('SIMP_SCRIPT') ? getenv('SIMP_SCRIPT') : 'simp';
+$dirroot = `$simp config --dirweb`;
+require_once($dirroot.'config.php');
+
+$opt = getopt('rs:');
+
+if (isset($opt['s'])) {
+    $separador = $opt['s'];
+} else {
+    $separador = ' ';
+}
+
+$objetos = instalacao::get_objetos();
+
+// Inverter ordem
+if (isset($opt['r'])) {
+    $objetos = array_reverse($objetos);
+}
+
+$espaco = '';
+foreach ($objetos as $obj) {
+    echo $espaco.$obj->get_tabela();
+    $espaco = $separador;
+}
+exit(0);

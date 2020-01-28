@@ -1,0 +1,21 @@
+//
+//     Imprime o nome de um objeto filho (relacionamento 1:1)
+//
+public function imprimir_objeto_rel_uu($nome_atributo, $return = false, $imprimir_descricao = true, $descricao_alternativa = false) {
+// String $nome_atributo: nome do atributo referente ao relacionamento (nome do objeto)
+// Bool $return: indica se o resultado sera' retornado ou impresso
+// Bool $imprimir_descricao: indica se deve ser incluida a descricao do relacionamento
+// String $descricao_alternativa: valor da descricao alternativa a ser utilizada
+//
+    switch ($nome_atributo) {
+    case '{{objeto}}':
+        $valor = '';
+        {{codigo}}
+        if ($return) {
+            return $valor;
+        }
+        echo $valor;
+        return;
+    }
+    return parent::imprimir_objeto_rel_uu($nome_atributo, $return, $imprimir_descricao, $descricao_alternativa);
+}

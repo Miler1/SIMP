@@ -1,0 +1,14 @@
+//
+//     Obtem informacoes sobre um campo do formulario
+//
+public function get_info_campo($campo) {
+// String $campo: campo desejado
+//
+    switch ($campo) {
+    case '{{campo}}':
+        $atributo = new atributo('{{campo}}', '{{descricao}}', {{padrao}});
+        {{definicao}}
+        return $atributo;
+    }
+    return parent::get_info_campo($campo);
+}

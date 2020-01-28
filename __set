@@ -1,0 +1,12 @@
+//
+//     Define o valor de um atributo da classe
+//
+public function __set($atributo, $valor) {
+// String $atributo: nome do atributo a ser definido
+// Mixed $valor: valor do atributo
+//
+    switch ($atributo) {
+    case '{{atributo}}':
+        {{codigo}}
+    }
+}

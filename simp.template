@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# SIMP
+# Descricao: script para executar comandos do Simp
+# Autor: Rubens Takiguti Ribeiro
+# Orgao: TecnoLivre - Cooperativa de Tecnologia e Solucoes Livres
+# E-mail: rubens@tecnolivre.com.br
+# Versao: 1.0.0.0
+# Data: 26/10/2010
+# Modificado: 26/10/2010
+# License: LICENSE.TXT
+# Copyright (C) 2010  Rubens Takiguti Ribeiro
+#
+
+# ATENCAO: configure a variavel abaixo com o diretorio onde ficam os sub-comandos
+
+# Diretorio com os sub-comandos
+readonly dir='###dir###'
+
+##################################
+# Nao modifique as linhas abaixo #
+##################################
+
+# Obter informacoes do script corrente
+readonly dir_corrente=$(dirname "${0}")
+readonly script_corrente=$(basename "${0}")
+
+# Checar argumentos
+if (( $# == 0 ))
+then
+    echo "Faltou informar o comando como argumento" 1>&2
+    exit 1
+fi
+
+# Buscar o comando desejado
+readonly comando="${1}"
+readonly comando_completo="${dir}/${comando}"
+if [ ! -x  "${comando_completo}" ]
+then
+    echo "Comando desconhecido '${comando}'" 1>&2
+    exit 1
+fi
+
+# Remover primeiro argumento
+shift
+
+# Executar o comando
+readonly SIMP_SCRIPT="${dir_corrente}/${script_corrente}"
+export SIMP_SCRIPT
+exec $comando_completo "$@"
+EXIT_STATUS=$?
+unset SIMP_SCRIPT
+
+# Retornar o valor obtido pelo comando
+exit $EXIT_STATUS

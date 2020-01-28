@@ -1,0 +1,1 @@
+$form->campo_image({{name}}, {{id}}, {{src}}, {{label}});

@@ -1,0 +1,12 @@
+//
+//     Indica se o registro pode ser manipulado pelo usuario
+//
+public function pode_ser_manipulado(&$usuario) {
+// usuario $usuario: usuario a ser testado
+//
+    $r = false;
+    if ({{condicoes}}) {
+        $r = true;
+    }
+    return $r;
+}
